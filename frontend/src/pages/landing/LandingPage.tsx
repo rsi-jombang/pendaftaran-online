@@ -8,16 +8,16 @@ import { Card } from "../../shared/components/ui/Card";
 import { Badge } from "../../shared/components/ui/Badge";
 import { Skeleton } from "../../shared/components/ui/Skeleton";
 import { usePoliList } from "../../features/poli/hooks";
-import { 
-  Zap, 
-  Users, 
-  Activity, 
+import {
+  Zap,
+  Users,
+  Activity,
   ShieldCheck,
   Baby,
   Heart,
   Eye,
   Stethoscope,
-  type LucideIcon
+  type LucideIcon,
 } from "lucide-react";
 
 const staggerDelay = 0.1; // 100ms
@@ -62,6 +62,10 @@ export function LandingPage() {
   const isPoliInView = useInView(poliRef, { once: true, margin: "-100px" });
 
   const { data: poliData, isLoading: isPoliLoading } = usePoliList();
+
+  const handlePoliClick = (poliId: string) => {
+    window.location.href = `/poli/${poliId}`;
+  };
 
   return (
     <div className="min-h-screen">
@@ -114,7 +118,7 @@ export function LandingPage() {
               transition={{ duration: 0.3, delay: staggerDelay * 3 }}
               className="relative h-[400px] lg:h-[500px] hidden lg:block"
             >
-              <div 
+              <div
                 className="absolute inset-0 rounded-card flex items-center justify-center"
                 style={{
                   background: "linear-gradient(135deg, var(--color-primary-light) 0%, rgba(59, 130, 196, 0.1) 100%)",
@@ -122,7 +126,7 @@ export function LandingPage() {
                 }}
               >
                 <div className="text-center space-y-4">
-                  <div 
+                  <div
                     className="w-24 h-24 mx-auto rounded-full flex items-center justify-center"
                     style={{ backgroundColor: "rgba(15, 155, 142, 0.2)" }}
                   >
@@ -233,9 +237,9 @@ export function LandingPage() {
                     animate={isPoliInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
-                    <Card 
+                    <Card
                       variant={poli.quota_status === "full" ? "disabled" : "interactive"}
-                      onClick={() => poli.quota_status !== "full" && (window.location.href = `/poli/${poli.id}`)}
+                      onClick={() => handlePoliClick(poli.id)}
                     >
                       <div className="flex items-start gap-4">
                         <div

@@ -38,17 +38,24 @@ export interface RegistrationResult {
   queue_position: number;
 }
 
+export interface PendingSelection {
+  poliId: string;
+  poliName: string;
+  doctorId: string;
+  doctorName: string;
+  date: string;
+  practiceHours: string;
+}
+
 interface RegistrationFlowState {
   nik: string | null;
   patient: PatientData | null;
-  selectedPoli: Poli | null;
-  selectedDate: string | null;
-  selectedDoctor: Doctor | null;
+  pendingSelection: PendingSelection | null;
   registrationResult: RegistrationResult | null;
 
   setPatient: (patient: PatientData) => void;
-  setSelectedPoli: (poli: Poli) => void;
-  setSelectedSchedule: (date: string, doctor: Doctor) => void;
+  setPendingSelection: (selection: PendingSelection) => void;
+  clearPendingSelection: () => void;
   setRegistrationResult: (result: RegistrationResult) => void;
   reset: () => void;
 }
@@ -56,23 +63,18 @@ interface RegistrationFlowState {
 export const useRegistrationFlowStore = create<RegistrationFlowState>()((set) => ({
   nik: null,
   patient: null,
-  selectedPoli: null,
-  selectedDate: null,
-  selectedDoctor: null,
+  pendingSelection: null,
   registrationResult: null,
 
   setPatient: (patient) => set({ patient, nik: patient.nik }),
-  setSelectedPoli: (poli) => set({ selectedPoli: poli }),
-  setSelectedSchedule: (date, doctor) =>
-    set({ selectedDate: date, selectedDoctor: doctor }),
+  setPendingSelection: (selection) => set({ pendingSelection: selection }),
+  clearPendingSelection: () => set({ pendingSelection: null }),
   setRegistrationResult: (result) => set({ registrationResult: result }),
   reset: () =>
     set({
       nik: null,
       patient: null,
-      selectedPoli: null,
-      selectedDate: null,
-      selectedDoctor: null,
+      pendingSelection: null,
       registrationResult: null,
     }),
 }));

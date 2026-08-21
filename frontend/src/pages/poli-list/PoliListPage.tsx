@@ -1,28 +1,19 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { StepIndicator } from "../../shared/components/ui";
 import { Skeleton } from "../../shared/components/ui";
 import { EmptyState } from "../../shared/components/feedback";
 import { PoliCard } from "./components/PoliCard";
 import { PoliSearchFilter } from "./components/PoliSearchFilter";
 import { usePoliList } from "../../features/poli";
-import { useRegistrationFlowStore } from "../../shared/store/registrationFlowStore";
 import type { Poli } from "../../features/poli/types";
 
 export function PoliListPage() {
   const navigate = useNavigate();
-  const { patient, setSelectedPoli } = useRegistrationFlowStore();
   const { data: poliData, isLoading } = usePoliList();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-
-  // Redirect ke /cek-nik jika patient belum ada (route guard)
-  if (!patient && !isLoading) {
-    navigate("/cek-nik");
-    return null;
-  }
 
   // Extract unique categories dari data
   const categories = useMemo(() => {
@@ -47,25 +38,16 @@ export function PoliListPage() {
   }, [poliData, searchTerm, selectedCategory]);
 
   const handlePoliClick = (poliId: string) => {
-    const poli = poliData?.data.find((p: Poli) => p.id === poliId);
-    if (poli) {
-      setSelectedPoli(poli);
-      navigate(`/poli/${poliId}`);
-    }
+    navigate(`/poli/${poliId}`);
   };
-
-  const steps = ["Cek NIK", "Pilih Poli", "Jadwal & Form", "Status"];
 
   return (
     <div className="min-h-screen py-12 px-6" style={{ backgroundColor: "var(--color-bg-base)" }}>
       <div className="max-w-container mx-auto">
-        {/* Step Indicator */}
-        <StepIndicator currentStep={2} steps={steps} />
-
         {/* Page Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--color-text-primary)" }}>
-            Pilih Poli
+            Semua Poli
           </h1>
           <p className="text-base" style={{ color: "var(--color-text-secondary)" }}>
             Pilih poli sesuai kebutuhan kesehatan Anda

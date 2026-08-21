@@ -1,0 +1,1 @@
+export { RegistrationFormPage } from "./RegistrationFormPage";

@@ -18,7 +18,7 @@ Frontend: **Vite + React + TypeScript**, mengonsumsi **REST API Laravel** (backe
 | Styling | **Tailwind CSS** | Konsisten dengan design token di `design.md` |
 | Animasi | **Framer Motion** | Page transition, stagger card, checkmark animation, micro-interaction sesuai `design.md` |
 | Icon | **lucide-react** | Sesuai rekomendasi design system |
-| Realtime status antrian | **Polling via TanStack Query `refetchInterval`** (bukan WebSocket) | Update posisi antrian di Halaman 5 — lihat Section 4.3.1 untuk contoh response. Upgrade ke Laravel Echo/Pusher bisa dipertimbangkan nanti, tidak untuk MVP saat ini. |
+| Realtime status antrian | **Polling via TanStack Query `refetchInterval`** (bukan WebSocket) | Update posisi antrian di Halaman Status — lihat Section 4.3.1 untuk contoh response. Upgrade ke Laravel Echo/Pusher bisa dipertimbangkan nanti, tidak untuk MVP saat ini. |
 | Testing | **Vitest + React Testing Library** | Unit/integration test komponen & hooks |
 | Linting/format | **ESLint + Prettier** | Konsistensi kode |
 
@@ -37,27 +37,31 @@ src/
 │       ├── QueryProvider.tsx    # TanStack Query client
 │       └── ThemeProvider.tsx    # Design token / theme context (jika perlu)
 │
-├── pages/                       # 1 folder = 1 halaman utama (5 halaman)
+├── pages/                       # 1 folder = 1 halaman utama
 │   ├── landing/
 │   │   └── LandingPage.tsx
-│   ├── nik-check/
+│   ├── poli-list/                # PUBLIK — tanpa guard, murni informasi
+│   │   ├── PoliListPage.tsx
+│   │   └── components/
+│   │       ├── PoliCard.tsx
+│   │       └── PoliSearchFilter.tsx
+│   ├── poli-detail/               # PUBLIK — tanpa guard, murni informasi (TIDAK ada form di sini)
+│   │   ├── PoliDetailPage.tsx
+│   │   └── components/
+│   │       ├── DateChipSelector.tsx
+│   │       └── DoctorCard.tsx     # tombol "Daftar" di sini → simpan pendingSelection → navigate /cek-nik
+│   ├── nik-check/                 # GUARDED start of wizard (step 1/3)
 │   │   ├── NikCheckPage.tsx
 │   │   └── components/
 │   │       ├── NikForm.tsx
 │   │       ├── PatientFoundCard.tsx
 │   │       └── NewPatientForm.tsx
-│   ├── poli-list/
-│   │   ├── PoliListPage.tsx
+│   ├── registration-form/         # GUARDED (step 2/3) — halaman baru, terpisah dari poli-detail
+│   │   ├── RegistrationFormPage.tsx
 │   │   └── components/
-│   │       ├── PoliCard.tsx
-│   │       └── PoliSearchFilter.tsx
-│   ├── poli-detail/
-│   │   ├── PoliDetailPage.tsx
-│   │   └── components/
-│   │       ├── DateChipSelector.tsx
-│   │       ├── DoctorCard.tsx
+│   │       ├── SelectionSummaryChip.tsx   # ringkasan poli/dokter/tanggal dari pendingSelection
 │   │       └── RegistrationForm.tsx
-│   └── registration-status/
+│   └── registration-status/       # GUARDED (step 3/3)
 │       ├── RegistrationStatusPage.tsx
 │       └── components/
 │           ├── QueueNumberDisplay.tsx
@@ -125,25 +129,33 @@ src/
 
 | Jenis state | Tool | Contoh |
 |---|---|---|
-| **Server state** (data dari API) | TanStack Query | Hasil cek NIK, list poli, jadwal dokter, status antrian |
-| **Client/UI state** (alur wizard, pilihan sementara) | Zustand | Poli yang dipilih, dokter yang dipilih, tanggal yang dipilih, data NIK yang sudah diverifikasi — dipakai lintas halaman 2→3→4→5 |
+| **Server state** (data dari API) | TanStack Query | List poli (publik), jadwal dokter (publik), hasil cek NIK, status antrian |
+| **Client/UI state** (alur wizard, pilihan sementara) | Zustand | Jadwal yang dipilih di halaman publik (`pendingSelection`), data pasien hasil verifikasi NIK, hasil registrasi — dipakai lintas halaman guarded (Cek NIK → Form Pendaftaran → Status) |
+
+> **Catatan penting:** Halaman `poli-list` dan `poli-detail` bersifat **publik** dan **tidak menyimpan apa pun ke Zustand** kecuali saat user benar-benar klik tombol "Daftar" pada dokter tertentu — di titik itu baru `pendingSelection` diisi.
 
 ### 3.2 Registration Flow Store (Zustand) — contoh shape
 
 ```ts
+interface PendingSelection {
+  poliId: string;
+  poliName: string;         // untuk ditampilkan di ringkasan tanpa refetch
+  doctorId: string;
+  doctorName: string;
+  date: string;
+  practiceHours: string;
+}
+
 interface RegistrationFlowState {
-  nik: string | null;
-  patient: PatientData | null;       // hasil dari cek NIK / registrasi baru
-  selectedPoli: Poli | null;
-  selectedDate: string | null;
-  selectedDoctor: Doctor | null;
-  registrationResult: RegistrationResult | null; // nomor antrian, dsb
+  patient: PatientData | null;            // hasil dari cek NIK / registrasi baru
+  pendingSelection: PendingSelection | null; // diisi dari PoliDetailPage (publik) saat klik "Daftar"
+  registrationResult: RegistrationResult | null; // nomor antrian, dsb — hasil submit
 
   setPatient: (patient: PatientData) => void;
-  setSelectedPoli: (poli: Poli) => void;
-  setSelectedSchedule: (date: string, doctor: Doctor) => void;
+  setPendingSelection: (selection: PendingSelection) => void;
   setRegistrationResult: (result: RegistrationResult) => void;
-  reset: () => void;
+  clearPendingSelection: () => void;      // dipanggil setelah submit sukses
+  reset: () => void;                      // dipanggil dari tombol "Kembali ke Beranda"
 }
 ```
 
@@ -152,27 +164,35 @@ State ini **tidak disimpan di localStorage** secara default (data pasien sensiti
 ### 3.3 Alur end-to-end
 
 ```
-LandingPage
-   │ klik "Daftar"
+LandingPage / PoliListPage (PUBLIK, tanpa guard)
+   │ GET /api/poli → React Query (cache)
+   │ klik card poli → navigate /poli/:id  (TIDAK menyimpan apa pun ke Zustand)
    ▼
-NikCheckPage
-   │ POST /api/patients/check-nik  → React Query mutation
-   │ jika terdaftar → simpan patient ke Zustand → navigate /poli
-   │ jika belum → tampilkan form baru → POST /api/patients → simpan ke Zustand → navigate /poli
-   ▼
-PoliListPage
-   │ GET /api/poli  → React Query (cache)
-   │ klik card poli → simpan selectedPoli ke Zustand → navigate /poli/:id
-   ▼
-PoliDetailPage
+PoliDetailPage (PUBLIK, tanpa guard, informasi saja — TIDAK ada form)
    │ GET /api/poli/:id/schedules?date=...  → React Query (refetch saat ganti tanggal)
-   │ pilih dokter → simpan ke Zustand
-   │ submit form → POST /api/registrations → React Query mutation
-   │ response berisi queue_number → simpan ke Zustand → navigate /status/:registrationId
+   │ klik "Daftar" pada dokter tertentu
+   │ → simpan pendingSelection { poliId, doctorId, date, ... } ke Zustand
+   │ → navigate /cek-nik
    ▼
-RegistrationStatusPage
+NikCheckPage (GUARDED start of wizard, step 1/3)
+   │ POST /api/patients/check-nik  → React Query mutation
+   │ jika terdaftar → simpan patient ke Zustand
+   │ jika belum → tampilkan form baru → POST /api/patients → simpan patient ke Zustand
+   │ lalu:
+   │   jika pendingSelection ADA → navigate /daftar (Form Pendaftaran)
+   │   jika pendingSelection KOSONG (user datang dari CTA generik) → navigate /poli (pilih jadwal dulu)
+   ▼
+RegistrationFormPage (GUARDED, step 2/3)
+   │ baca pendingSelection dari Zustand untuk ringkasan pilihan
+   │ redirect ke /poli jika pendingSelection kosong; redirect ke /cek-nik jika patient kosong
+   │ submit form → POST /api/registrations → React Query mutation
+   │ response berisi queue_number → simpan registrationResult ke Zustand
+   │ clearPendingSelection() → navigate /status/:registrationId
+   ▼
+RegistrationStatusPage (GUARDED, step 3/3)
    │ GET /api/registrations/:id  (initial data dari mutation response, lalu refetch)
    │ polling via refetchInterval (bukan WebSocket) untuk update posisi antrian — lihat Section 4.3.1
+   │ tombol "Kembali ke Beranda" → reset() Zustand store
 ```
 
 ---
@@ -307,6 +327,22 @@ Digunakan sebagai fixture (`features/*/mock.ts`) selama backend belum tersedia. 
 }
 ```
 
+**`GET /api/poli/{id}`** (dipakai oleh PoliDetailPage — publik)
+```json
+{
+  "data": {
+    "id": "POLI-01",
+    "name": "Poli Anak",
+    "category": "Spesialis",
+    "icon": "baby",
+    "description": "Melayani pemeriksaan dan konsultasi kesehatan anak usia 0-18 tahun.",
+    "doctors_today": 3,
+    "quota_remaining": 12,
+    "quota_status": "available"
+  }
+}
+```
+
 **`GET /api/poli/{id}/schedules?date=2026-08-20`**
 ```json
 {
@@ -412,16 +448,24 @@ export interface ApiError {
 
 ```tsx
 const router = createBrowserRouter([
+  // Publik — tanpa guard
   { path: "/", element: <LandingPage /> },
-  { path: "/cek-nik", element: <NikCheckPage /> },
   { path: "/poli", element: <PoliListPage /> },
   { path: "/poli/:poliId", element: <PoliDetailPage /> },
+
+  // Guarded — alur pendaftaran (wizard, berurutan)
+  { path: "/cek-nik", element: <NikCheckPage /> },
+  { path: "/daftar", element: <RegistrationFormPage /> },
   { path: "/status/:registrationId", element: <RegistrationStatusPage /> },
+
   { path: "*", element: <NotFoundPage /> },
 ]);
 ```
 
-- **Route guard ringan:** `PoliDetailPage` dan `RegistrationStatusPage` mengecek apakah state Zustand relevan tersedia (mis. `patient` sudah ada); jika tidak (misal akses langsung via URL/refresh), redirect ke `/cek-nik` atau fetch ulang dari API jika ada ID di URL.
+- **`/` , `/poli`, `/poli/:poliId` — publik, tanpa guard sama sekali.** Bisa diakses kapan saja, tidak butuh `patient` atau state Zustand apa pun. `PoliDetailPage` di sini **hanya menampilkan info + jadwal**, tidak ada form pendaftaran — tombol "Daftar" pada tiap dokter menyimpan `pendingSelection` ke Zustand lalu navigate ke `/cek-nik`.
+- **`/cek-nik` — guarded start of wizard.** Tidak butuh guard masuk (siapa saja boleh cek NIK), tapi keluarnya bercabang: kalau `pendingSelection` ada di store → ke `/daftar`; kalau tidak ada → ke `/poli`.
+- **`/daftar` (RegistrationFormPage) — route guard wajib:** redirect ke `/poli` jika `pendingSelection` kosong, redirect ke `/cek-nik` jika `patient` kosong. Ini halaman form pendaftaran yang terpisah dari `PoliDetailPage`.
+- **`/status/:registrationId` — route guard ringan:** gunakan `registrationResult` dari Zustand sebagai initial data kalau ada, tapi tetap fetch dari `GET /api/registrations/:id` via `registrationId` di URL agar refresh-safe (tidak wajib bergantung ke Zustand saja).
 - Animasi transisi antar route menggunakan Framer Motion `AnimatePresence` di level `App.tsx`.
 
 ---

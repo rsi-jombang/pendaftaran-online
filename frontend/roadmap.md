@@ -8,7 +8,7 @@ Roadmap disusun per fase agar development frontend & backend (dikerjakan sendiri
 
 ---
 
-## Fase 0 — Fondasi & Kontrak
+## Fase 0 — Fondasi & Kontrak (Minggu 1)
 
 **Tujuan:** Menyamakan kontrak antara frontend dan backend sebelum coding fitur, agar tidak ada blokir paralel.
 
@@ -24,7 +24,7 @@ Roadmap disusun per fase agar development frontend & backend (dikerjakan sendiri
 
 ---
 
-## Fase 1 — Komponen UI Dasar & Design System
+## Fase 1 — Komponen UI Dasar & Design System (Minggu 2)
 
 **Tujuan:** Bangun komponen reusable dulu sebelum halaman, supaya semua halaman konsisten & cepat disusun.
 
@@ -38,61 +38,64 @@ Roadmap disusun per fase agar development frontend & backend (dikerjakan sendiri
 
 ---
 
-## Fase 2 — Landing Page & Cek NIK
+## Fase 2 — Landing Page & Poli Publik (List + Detail) (Minggu 3)
 
-- [ ] `LandingPage`: hero, keunggulan, preview poli, footer — statis (belum butuh API kompleks, kecuali preview poli via `GET /api/poli`).
-- [ ] `features/nik`: `api.ts`, `hooks.ts` (`useCheckNik` mutation), `types.ts`.
-- [ ] `NikCheckPage`: form input NIK + validasi (Zod), state hasil (terdaftar/belum), animasi expand hasil.
+> **Catatan:** urutan berubah dari versi sebelumnya — halaman poli (publik, informasi) sekarang dikerjakan **sebelum** Cek NIK, karena dari sisi alur, user melihat info poli dulu sebelum masuk ke proses verifikasi.
+
+- [ ] `LandingPage`: hero, keunggulan, preview poli, footer.
+- [ ] `features/poli`: `api.ts`, `hooks.ts` (`usePoliList`, `usePoliDetail`), `types.ts`, `mock.ts`.
+- [ ] `PoliListPage` (publik, `/poli`, tanpa guard): grid card poli, search + filter kategori, empty state.
+- [ ] `features/schedule`: `api.ts`, `hooks.ts` (`useDoctorSchedule`), `types.ts`, `mock.ts`.
+- [ ] `PoliDetailPage` (publik, `/poli/:poliId`, tanpa guard, **tanpa form**): header, `DateChipSelector`, `DoctorCard` list dengan tombol "Daftar" per dokter tersedia.
+- [ ] Tombol "Daftar" pada `DoctorCard` → simpan `pendingSelection` ke Zustand store → navigate ke `/cek-nik`.
+
+**Output:** Landing → Semua Poli → Detail Poli berjalan end-to-end sebagai halaman publik murni informasi, tombol "Daftar" sudah terhubung ke alur berikutnya.
+
+---
+
+## Fase 3 — Cek NIK (Minggu 4)
+
+- [ ] `features/nik`: `api.ts`, `hooks.ts` (`useCheckNik` mutation), `types.ts`, `mock.ts`.
+- [ ] `NikCheckPage` (`/cek-nik`, guarded start of wizard, StepIndicator step 1/3): form input NIK + validasi (Zod), state hasil (terdaftar/belum), animasi expand hasil. Tampilkan ringkasan `pendingSelection` (jika ada) di atas form.
 - [ ] Form registrasi pasien baru (modal/drawer) + integrasi `POST /api/patients`.
-- [ ] Simpan hasil ke Zustand store (`registrationFlowStore`).
+- [ ] Simpan hasil ke Zustand store (`patient`).
+- [ ] Logic percabangan setelah sukses: kalau `pendingSelection` ada → navigate `/daftar`; kalau tidak ada → navigate `/poli`.
 - [ ] Unit test: validasi format NIK, mock API cek NIK (skenario terdaftar/tidak/error).
 
-**Output:** Alur Halaman 1 → 2 berjalan end-to-end dengan API asli (bukan mock) jika backend sudah siap endpoint terkait; jika belum, pakai MSW (Mock Service Worker) agar frontend tidak terblokir.
+**Output:** Alur Poli Publik → Cek NIK berjalan end-to-end, dengan percabangan navigasi yang benar.
 
 ---
 
-## Fase 3 — Daftar Poli
+## Fase 4 — Form Pendaftaran (Minggu 5)
 
-- [ ] `features/poli`: `getPoliList`, `usePoliList`.
-- [ ] `PoliListPage`: grid card poli, search + filter kategori, empty state (poli tidak ditemukan).
-- [ ] Animasi stagger fade-in grid, hover elevate card.
-- [ ] Handling kuota penuh (card disabled state).
-- [ ] Route guard: redirect ke `/cek-nik` jika `patient` belum ada di store.
+> Halaman ini sekarang **terpisah** dari `PoliDetailPage` — dulunya digabung, sekarang jadi halaman guarded tersendiri.
 
-**Output:** Halaman 3 selesai dan terhubung ke Halaman 2 & 4.
+- [ ] `features/registration`: `api.ts`, `hooks.ts` (`useSubmitRegistration` mutation), `types.ts`, `mock.ts`.
+- [ ] `RegistrationFormPage` (`/daftar`, guarded, StepIndicator step 2/3): route guard (redirect `/poli` jika `pendingSelection` kosong, redirect `/cek-nik` jika `patient` kosong).
+- [ ] `SelectionSummaryChip`: ringkasan poli/dokter/tanggal dari `pendingSelection`.
+- [ ] `RegistrationForm` (React Hook Form + Zod): data pasien auto-terisi, field keluhan, metode kedatangan, checkbox persetujuan, sticky button mobile.
+- [ ] Submit handler: mutation ke `POST /api/registrations`, error 422 mapping ke field form.
+- [ ] Setelah sukses: simpan `registrationResult` ke Zustand, `clearPendingSelection()`, navigate ke `/status/:registrationId`.
 
----
-
-## Fase 4 — Detail Jadwal Poli & Form Pendaftaran
-
-- [ ] `features/schedule`: `getDoctorSchedule`, `useDoctorSchedule` (query per tanggal).
-- [ ] `PoliDetailPage`:
-  - [ ] `DateChipSelector` (7 hari ke depan, horizontal scroll di mobile).
-  - [ ] `DoctorCard` list per tanggal terpilih, state disabled untuk kuota penuh.
-  - [ ] Transisi fade saat ganti tanggal.
-- [ ] `RegistrationForm` (React Hook Form + Zod): ringkasan pilihan, field keluhan, checkbox persetujuan.
-- [ ] `features/registration`: `submitRegistration`, `useSubmitRegistration` (mutation) → `POST /api/registrations`.
-- [ ] Error handling 422 dari backend → mapping ke field form.
-- [ ] Navigasi ke `/status/:registrationId` setelah sukses, simpan hasil ke Zustand.
-
-**Output:** Alur inti pendaftaran (Halaman 3→4) selesai dan bisa submit data nyata ke Laravel.
+**Output:** Alur inti pendaftaran (Poli Publik → Cek NIK → Form Pendaftaran) selesai dan bisa submit data nyata ke Laravel.
 
 ---
 
-## Fase 5 — Status Pendaftaran
+## Fase 5 — Status Pendaftaran (Minggu 6)
 
 - [ ] `features/queue`: `getQueueStatus`, `useQueueStatus`.
-- [ ] `RegistrationStatusPage`: identitas pasien (NIK disamarkan), detail poli/dokter/jadwal, `QueueNumberDisplay` besar dengan animasi.
+- [ ] `RegistrationStatusPage` (`/status/:registrationId`, guarded, StepIndicator step 3/3): identitas pasien (NIK disamarkan), detail poli/dokter/jadwal, `QueueNumberDisplay` besar dengan animasi.
 - [ ] Checkmark animation (Framer Motion path draw) saat halaman pertama muncul.
-- [ ] Keputusan realtime: mulai dengan **polling** (`refetchInterval`, misal tiap 15–30 detik) — cukup untuk MVP.
-- [ ] Tombol cetak/unduh bukti pendaftaran (PDF sederhana via `window.print()` styled, atau endpoint backend yang generate PDF).
-- [ ] Route guard: jika akses langsung via URL dengan `registrationId` valid, fetch dari API (tidak wajib bergantung ke Zustand saja) — penting untuk refresh-safe.
+- [ ] Polling (`refetchInterval`, misal tiap 15–30 detik) — cukup untuk MVP.
+- [ ] Tombol cetak/unduh bukti pendaftaran (`window.print()` styled).
+- [ ] Route guard refresh-safe: fetch dari API berdasarkan `registrationId` di URL, tidak wajib bergantung ke Zustand saja.
+- [ ] Tombol "Kembali ke Beranda" → `reset()` Zustand store, navigate ke `/`.
 
-**Output:** Alur end-to-end 5 halaman selesai (MVP lengkap).
+**Output:** Alur end-to-end lengkap (MVP): Landing → Poli Publik → Cek NIK → Form Pendaftaran → Status.
 
 ---
 
-## Fase 6 — Polish, QA, & Aksesibilitas
+## Fase 6 — Polish, QA, & Aksesibilitas (Minggu 8)
 
 - [ ] Review responsive di semua breakpoint (mobile-first, banyak pasien akses dari HP).
 - [ ] Audit aksesibilitas: kontras warna, ukuran tap target, `prefers-reduced-motion`.
@@ -105,7 +108,7 @@ Roadmap disusun per fase agar development frontend & backend (dikerjakan sendiri
 
 ---
 
-## Fase 7 — Realtime Upgrade (Opsional)
+## Fase 7 — Realtime Upgrade (Opsional, Minggu 9+)
 
 - [ ] Integrasi Laravel Echo + Pusher/Soketi untuk update posisi antrian tanpa polling.
 - [ ] Notifikasi push/browser saat mendekati giliran (opsional, butuh service worker).
@@ -113,7 +116,7 @@ Roadmap disusun per fase agar development frontend & backend (dikerjakan sendiri
 
 ---
 
-## Fase 8 — Deployment & Go-Live
+## Fase 8 — Deployment & Go-Live (Minggu 10)
 
 - [ ] Setup hosting frontend (static hosting/CDN, mis. Nginx/Vercel/Netlify tergantung infrastruktur RS).
 - [ ] Setup reverse proxy agar frontend & API Laravel satu domain (hindari isu CORS produksi).
@@ -129,15 +132,15 @@ Roadmap disusun per fase agar development frontend & backend (dikerjakan sendiri
 |---|---|---|
 | 0 | 1 minggu | Setup & kontrak API |
 | 1 | 1 minggu | Component library |
-| 2 | 1 minggu | Landing + Cek NIK |
-| 3 | 1 minggu | Daftar Poli |
-| 4 | 2 minggu | Detail Jadwal + Form (paling kompleks) |
+| 2 | 1 minggu | Landing + Poli Publik (List + Detail) |
+| 3 | 1 minggu | Cek NIK |
+| 4 | 1 minggu | Form Pendaftaran (halaman baru, terpisah) |
 | 5 | 1 minggu | Status Pendaftaran |
 | 6 | 1 minggu | Polish, QA, Aksesibilitas |
 | 7 | opsional | Realtime |
 | 8 | 1 minggu | Deployment |
 
-**Total estimasi MVP (Fase 0–6 + 8): ~9 minggu**, dengan asumsi backend Laravel dikembangkan paralel dan kontrak API sudah disepakati di Fase 0.
+**Total estimasi MVP (Fase 0–6 + 8): ~8 minggu**, dengan asumsi backend Laravel dikembangkan paralel dan kontrak API sudah disepakati di Fase 0.
 
 ---
 
@@ -145,9 +148,9 @@ Roadmap disusun per fase agar development frontend & backend (dikerjakan sendiri
 
 Agar frontend tidak terblokir menunggu backend selesai, prioritaskan endpoint berikut lebih dulu:
 
-1. `POST /api/patients/check-nik` — dibutuhkan sejak Fase 2.
-2. `GET /api/poli` — dibutuhkan sejak Fase 2 (preview di landing) & Fase 3.
-3. `GET /api/poli/{id}/schedules` — dibutuhkan Fase 4.
+1. `GET /api/poli` dan `GET /api/poli/{id}` — dibutuhkan sejak Fase 2 (poli publik, sebelum cek NIK).
+2. `GET /api/poli/{id}/schedules` — dibutuhkan Fase 2 (detail poli publik).
+3. `POST /api/patients/check-nik` — dibutuhkan Fase 3.
 4. `POST /api/registrations` — dibutuhkan Fase 4.
 5. `GET /api/registrations/{id}` — dibutuhkan Fase 5.
 
@@ -161,41 +164,40 @@ Setiap baris di bawah adalah **satu unit kerja yang idealnya jadi satu sesi prom
 
 ### Fase 0 — Setup (pecah jadi 3 prompt)
 1. Init project Vite+React+TS, ESLint/Prettier, Tailwind + design token dari `design.md`.
-2. Buat struktur folder kosong sesuai `architecture.md` (pages/, features/, shared/) + axios instance + queryClient + Zustand store skeleton.
-3. Setup routing dasar (5 route, placeholder page) + `.env.example`.
+2. Buat struktur folder kosong sesuai `architecture.md` (pages/, features/, shared/) + axios instance + queryClient + Zustand store skeleton (dengan `pendingSelection`).
+3. Setup routing dasar (6 route: `/`, `/poli`, `/poli/:id`, `/cek-nik`, `/daftar`, `/status/:id`, placeholder page) + `.env.example`.
 
 ### Fase 1 — Component Library (pecah jadi 3 prompt)
 1. `shared/components/ui`: Button, Input, Badge, Skeleton — sesuai Component Contract di `design.md` Section 2.5.
 2. `shared/components/ui`: Card, StepIndicator + `shared/components/layout`: Navbar, Footer, PageTransition.
 3. `shared/components/feedback`: LoadingSpinner, ErrorState, EmptyState.
 
-### Fase 2 — Landing Page & Cek NIK (pecah jadi 4 prompt)
+### Fase 2 — Landing Page & Poli Publik (pecah jadi 6 prompt)
 1. `LandingPage`: hero + navbar + footer (statis dulu, tanpa data API).
-2. `LandingPage`: section keunggulan + preview poli (hubungkan ke `GET /api/poli` atau mock).
-3. `features/nik` (api.ts, hooks.ts, types.ts, mock.ts) + `NikCheckPage` form + validasi.
-4. State hasil cek NIK (terdaftar/belum) + form registrasi pasien baru + simpan ke Zustand + navigasi ke `/poli`.
-   - Verifikasi terhadap Acceptance Criteria Halaman 2 di `design.md` sebelum lanjut Fase 3.
+2. `features/poli` (api.ts, hooks.ts, types.ts, mock.ts) + `LandingPage` section keunggulan & preview poli (hubungkan ke `usePoliList`).
+3. `PoliListPage` (`/poli`, publik): grid card + skeleton loading + search/filter + empty state.
+4. `features/schedule` (api.ts, hooks.ts, types.ts, mock.ts).
+5. `PoliDetailPage` (`/poli/:id`, publik) — header + breadcrumb + `DateChipSelector` (belum ada DoctorCard).
+6. `DoctorCard` list + tombol "Daftar" per dokter → simpan `pendingSelection` ke Zustand → navigate `/cek-nik`.
+   - Verifikasi terhadap Acceptance Criteria Halaman Landing, Daftar Semua Poli, dan Detail Poli di `design.md` sebelum lanjut Fase 3.
 
-### Fase 3 — Daftar Poli (pecah jadi 3 prompt)
-1. `features/poli` (api.ts, hooks.ts, types.ts, mock.ts).
-2. `PoliListPage`: grid card + skeleton loading + search/filter.
-3. Empty state, kuota penuh state, route guard, animasi stagger.
-   - Verifikasi terhadap Acceptance Criteria Halaman 3.
+### Fase 3 — Cek NIK (pecah jadi 3 prompt)
+1. `features/nik` (api.ts, hooks.ts, types.ts, mock.ts) + `NikCheckPage` form + validasi + ringkasan `pendingSelection` (jika ada).
+2. State hasil cek NIK (terdaftar/belum) + form registrasi pasien baru + simpan `patient` ke Zustand.
+3. Logic percabangan navigasi (ada `pendingSelection` → `/daftar`, tidak ada → `/poli`) + error handling + refresh-safe.
+   - Verifikasi terhadap Acceptance Criteria Halaman Cek NIK.
 
-### Fase 4 — Detail Jadwal & Form (fase terberat — pecah jadi 6 prompt, JANGAN digabung)
-1. `features/schedule` (api.ts, hooks.ts, types.ts, mock.ts).
-2. `PoliDetailPage` — header + `DateChipSelector` saja (belum ada dokter/form).
-3. `DoctorCard` list + state pilih dokter + transisi fade antar tanggal.
-4. `features/registration` (api.ts, hooks.ts, types.ts, mock.ts) + skeleton `RegistrationForm` (belum submit).
-5. `RegistrationForm` lengkap: validasi Zod, ringkasan pilihan, checkbox persetujuan, sticky button mobile.
-6. Submit handler: mutation, error 422 mapping, navigasi ke `/status/:id`.
-   - Verifikasi terhadap Acceptance Criteria Halaman 4 sebelum lanjut.
+### Fase 4 — Form Pendaftaran (pecah jadi 3 prompt)
+1. `features/registration` (api.ts, hooks.ts, types.ts, mock.ts) + `RegistrationFormPage` kerangka + route guard (`pendingSelection`/`patient` kosong) + `SelectionSummaryChip`.
+2. `RegistrationForm` lengkap: validasi Zod, field lengkap, checkbox persetujuan, sticky button mobile.
+3. Submit handler: mutation, error 422 mapping, `clearPendingSelection()`, navigasi ke `/status/:id`.
+   - Verifikasi terhadap Acceptance Criteria Halaman Form Pendaftaran sebelum lanjut.
 
 ### Fase 5 — Status Pendaftaran (pecah jadi 3 prompt)
 1. `features/queue` (api.ts, hooks.ts dengan `refetchInterval`, types.ts, mock.ts).
 2. `RegistrationStatusPage`: `QueueNumberDisplay` + checkmark animation + detail info (NIK masked).
 3. Tombol cetak/unduh + route guard refresh-safe + reset store di tombol "Kembali ke Beranda".
-   - Verifikasi terhadap Acceptance Criteria Halaman 5 — **ini penanda MVP selesai**.
+   - Verifikasi terhadap Acceptance Criteria Halaman Status — **ini penanda MVP selesai**.
 
 ### Fase 6–8
 Lebih cocok dikerjakan manual/review langsung (polish, testing, deployment) daripada full vibecoding — gunakan AI per-isu spesifik saja (misal "perbaiki kontras warna di komponen X"), bukan prompt besar sekaligus.

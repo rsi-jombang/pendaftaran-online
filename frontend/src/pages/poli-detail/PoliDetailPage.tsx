@@ -1,15 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ChevronLeft, Baby, Heart, Eye, Stethoscope, Droplet, Activity } from "lucide-react";
-import { StepIndicator, Button, Skeleton } from "../../shared/components/ui";
+import { Button, Skeleton } from "../../shared/components/ui";
 import { DateChipSelector } from "./components/DateChipSelector";
 import { DoctorCard } from "./components/DoctorCard";
-import { RegistrationForm } from "./components/RegistrationForm";
-import { useDoctorSchedule } from "../../features/schedule";
+import { usePoliDetail, useDoctorSchedule } from "../../features/poli";
 import { useRegistrationFlowStore } from "../../shared/store/registrationFlowStore";
-import type { Poli } from "../../features/poli/types";
 import type { Doctor } from "../../features/schedule/types";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -17,22 +15,12 @@ import { id } from "date-fns/locale";
 export function PoliDetailPage() {
   const navigate = useNavigate();
   const { poliId } = useParams<{ poliId: string }>();
-  const { selectedPoli, patient } = useRegistrationFlowStore();
+  const { setPendingSelection } = useRegistrationFlowStore();
 
-  // Route guard: redirect ke /poli kalau selectedPoli kosong
-  if (!selectedPoli && !poliId) {
-    navigate("/poli");
-    return null;
-  }
+  const poliIdParam = poliId ?? null;
 
-  // Jika ada poliId dari URL tapi selectedPoli kosong (refresh/akses langsung),
-  // kita perlu fetch poli detail. Untuk sekarang, redirect ke /poli.
-  if (!selectedPoli && poliId) {
-    navigate("/poli");
-    return null;
-  }
-
-  const poli = selectedPoli as Poli | null;
+  // Fetch poli detail dari API menggunakan poliId dari URL
+  const { data: poliData, isLoading: isPoliLoading } = usePoliDetail(poliIdParam);
 
   // Date state - default hari ini
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
@@ -41,31 +29,54 @@ export function PoliDetailPage() {
     return today;
   });
 
-  // Selected doctor state (local, reset when date changes)
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-
-  // Reset selected doctor when date changes
-  useEffect(() => {
-    setSelectedDoctor(null);
-  }, [selectedDate]);
-
   // Fetch jadwal dokter berdasarkan tanggal
-  const { data: scheduleData, isLoading } = useDoctorSchedule(poli?.id || null, formatDate(selectedDate));
+  const { data: scheduleData, isLoading } = useDoctorSchedule(poliIdParam, formatDate(selectedDate));
 
   const handleDoctorSelect = (doctor: Doctor) => {
     if (doctor.quota_status === "available") {
-      setSelectedDoctor(doctor);
+      const poli = poliData?.data;
+      if (poli) {
+        setPendingSelection({
+          poliId: poli.id,
+          poliName: poli.name,
+          doctorId: doctor.id,
+          doctorName: doctor.name,
+          date: formatDate(selectedDate),
+          practiceHours: doctor.practice_hours,
+        });
+        navigate("/cek-nik");
+      }
     }
   };
 
-  const steps = ["Cek NIK", "Pilih Poli", "Jadwal & Form", "Status"];
+  // Loading poli detail
+  if (isPoliLoading) {
+    return (
+      <div className="min-h-screen py-12 px-6" style={{ backgroundColor: "var(--color-bg-base)" }}>
+        <div className="max-w-container mx-auto">
+          <div className="space-y-6">
+            <Skeleton variant="card" height={200} />
+            <Skeleton variant="card" height={150} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const poli = poliData?.data;
+  if (!poli) {
+    return (
+      <div className="min-h-screen py-12 px-6" style={{ backgroundColor: "var(--color-bg-base)" }}>
+        <div className="max-w-container mx-auto text-center py-12">
+          <p style={{ color: "var(--color-text-secondary)" }}>Poli tidak ditemukan</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-12 px-6" style={{ backgroundColor: "var(--color-bg-base)" }}>
       <div className="max-w-container mx-auto">
-        {/* Step Indicator */}
-        <StepIndicator currentStep={3} steps={steps} />
-
         {/* Header Detail Poli */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -78,35 +89,38 @@ export function PoliDetailPage() {
             <nav className="flex items-center gap-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
               <Link to="/" className="hover:underline">Beranda</Link>
               <span>/</span>
-              <Link to="/poli" className="hover:underline">Daftar Poli</Link>
+              <Link to="/poli" className="hover:underline">Semua Poli</Link>
               <span>/</span>
-              <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{poli?.name}</span>
+              <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{poli.name}</span>
             </nav>
 
-            {/* Ganti Poli Button */}
+            {/* Kembali ke Semua Poli Button */}
             <Link to="/poli">
               <Button variant="ghost" size="sm" icon={<ChevronLeft className="w-4 h-4" />}>
-                Ganti Poli
+                Kembali ke Semua Poli
               </Button>
             </Link>
           </div>
 
           {/* Poli Title + Icon */}
           <div className="flex items-center gap-4">
-            {poli && (
-              <div
-                className="w-16 h-16 rounded-card flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: "var(--color-primary-light)" }}
-              >
-                {getPoliIcon(poli.icon)}
-              </div>
-            )}
+            <div
+              className="w-16 h-16 rounded-card flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: "var(--color-primary-light)" }}
+            >
+              {getPoliIcon(poli.icon)}
+            </div>
             <div>
               <h1 className="text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>
-                {poli?.name}
+                {poli.name}
               </h1>
+              {poli.description && (
+                <p className="text-sm mt-2" style={{ color: "var(--color-text-secondary)" }}>
+                  {poli.description}
+                </p>
+              )}
               <p className="text-sm mt-1" style={{ color: "var(--color-text-secondary)" }}>
-                {poli?.doctors_today} dokter tersedia hari ini · {poli?.quota_remaining} kuota tersisa
+                {poli.doctors_today} dokter tersedia hari ini · {poli.quota_remaining} kuota tersisa
               </p>
             </div>
           </div>
@@ -159,21 +173,10 @@ export function PoliDetailPage() {
                     <DoctorCard
                       key={doctor.id}
                       doctor={doctor}
-                      isSelected={selectedDoctor?.id === doctor.id}
-                      onSelect={() => handleDoctorSelect(doctor)}
+                      onDaftar={() => handleDoctorSelect(doctor)}
                     />
                   ))}
                 </div>
-                {selectedDoctor && (
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 p-3 rounded-input text-sm text-center"
-                    style={{ backgroundColor: "var(--color-primary-light)", color: "var(--color-primary)" }}
-                  >
-                    ✓ {selectedDoctor.name} · {selectedDoctor.practice_hours} dipilih
-                  </motion.p>
-                )}
               </motion.div>
             </AnimatePresence>
           ) : (
@@ -184,14 +187,6 @@ export function PoliDetailPage() {
             </div>
           )}
         </motion.div>
-
-        {/* Registration Form */}
-        <RegistrationForm
-          selectedDoctor={selectedDoctor}
-          patient={patient}
-          selectedDate={selectedDate}
-          poliId={poli?.id || ""}
-        />
       </div>
     </div>
   );

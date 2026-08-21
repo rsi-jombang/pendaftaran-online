@@ -53,10 +53,10 @@ Agent **wajib** mengikuti keputusan berikut tanpa mengganti dengan preferensi/li
 ## 3. Aturan Konsistensi Desain (dari `design.md`)
 
 - Gunakan **CSS variable / Tailwind token** yang sudah didefinisikan di `design.md` Section 2.1–2.4 (warna primary/secondary/accent, radius 16px/12px, shadow soft, font Plus Jakarta Sans/Inter).
-- Setiap halaman baru **mengikuti struktur section** yang sudah dirinci per halaman di `design.md` Section 4 (misal Halaman 3 wajib punya search+filter, grid card dengan badge kuota, stagger fade-in) — jangan menyederhanakan atau menghilangkan elemen yang sudah dispesifikasikan tanpa konfirmasi.
-- Progress/step indicator (step 1–4) harus konsisten muncul di Halaman 2–5 sesuai alur di `design.md` Section 3.
+- Setiap halaman baru **mengikuti struktur section** yang sudah dirinci per halaman di `design.md` Section 4 — jangan menyederhanakan atau menghilangkan elemen yang sudah dispesifikasikan tanpa konfirmasi. **Perhatikan mana yang publik (tanpa guard, tanpa step indicator) dan mana yang guarded (bagian dari wizard, punya step indicator)** — jangan menambahkan guard/redirect ke halaman publik (`/`, `/poli`, `/poli/:poliId`), dan jangan menghilangkan guard dari halaman wizard (`/cek-nik`, `/daftar`, `/status/:id`).
+- Progress/step indicator (step 1–3: Cek NIK → Form Pendaftaran → Status) hanya muncul di halaman guarded, **tidak** di halaman publik (Landing, Daftar Semua Poli, Detail Poli), sesuai alur di `design.md` Section 3.
 - Perhatikan **aksesibilitas** (Section 6 di `design.md`): kontras warna, ukuran font ≥16px body, tap target ≥44px, `prefers-reduced-motion`. Agent tidak boleh mengabaikan ini demi "kecepatan development".
-- Nomor antrian, NIK yang disamarkan, dan elemen sensitif lain harus mengikuti format yang sudah dispesifikasikan (misal masking NIK di `design.md` Halaman 5), bukan menampilkan data mentah.
+- Nomor antrian, NIK yang disamarkan, dan elemen sensitif lain harus mengikuti format yang sudah dispesifikasikan (misal masking NIK di `design.md` Halaman Status), bukan menampilkan data mentah.
 
 ---
 

@@ -1,53 +1,25 @@
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Card } from "../../../shared/components/ui/Card";
 import { Badge } from "../../../shared/components/ui/Badge";
+import { Button } from "../../../shared/components/ui/Button";
 import type { Doctor } from "../../../features/schedule/types";
 
 interface DoctorCardProps {
   doctor: Doctor;
-  isSelected: boolean;
-  onSelect: () => void;
+  onDaftar: () => void;
 }
 
-export function DoctorCard({ doctor, isSelected, onSelect }: DoctorCardProps) {
+export function DoctorCard({ doctor, onDaftar }: DoctorCardProps) {
   const isDisabled = doctor.quota_status === "full";
-  const cardVariant = isDisabled ? "disabled" : isSelected ? "selected" : "interactive";
 
   return (
     <motion.div
-      key={doctor.id}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <Card
-        variant={cardVariant}
-        onClick={isDisabled ? undefined : onSelect}
-        className="relative"
-      >
-        {/* Checkmark overlay when selected */}
-        {isSelected && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            className="absolute top-3 right-3 z-10"
-            style={{
-              width: 24,
-              height: 24,
-              backgroundColor: "var(--color-primary)",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 2px 8px rgba(15, 155, 142, 0.4)",
-            }}
-          >
-            <Check className="w-4 h-4" style={{ color: "var(--color-surface)" }} strokeWidth={3} />
-          </motion.div>
-        )}
-
+      <Card variant={isDisabled ? "disabled" : "interactive"} className="relative">
         <div className="flex items-center gap-4 p-4">
           {/* Avatar */}
           <div className="relative flex-shrink-0">
@@ -92,29 +64,21 @@ export function DoctorCard({ doctor, isSelected, onSelect }: DoctorCardProps) {
             </Badge>
           </div>
 
-          {/* Radio indicator */}
+          {/* Tombol Daftar */}
           <div className="flex-shrink-0">
-            {isSelected ? (
-              <div
-                className="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                style={{ borderColor: "var(--color-primary)", backgroundColor: "var(--color-primary)" }}
+            {isDisabled ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled
+                className="opacity-50 cursor-not-allowed"
               >
-                <Check className="w-3.5 h-3.5" style={{ color: "var(--color-surface)" }} strokeWidth={3} />
-              </div>
-            ) : isDisabled ? (
-              <div
-                className="w-6 h-6 rounded-full border-2 flex items-center justify-center opacity-50"
-                style={{ borderColor: "var(--color-border)" }}
-              >
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--color-text-secondary)" }} />
-              </div>
+                Penuh
+              </Button>
             ) : (
-              <div
-                className="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                style={{ borderColor: "var(--color-border)" }}
-              >
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "transparent" }} />
-              </div>
+              <Button variant="primary" size="sm" onClick={onDaftar} icon={<ChevronRight className="w-4 h-4" />}>
+                Daftar
+              </Button>
             )}
           </div>
         </div>

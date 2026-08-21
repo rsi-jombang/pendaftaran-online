@@ -111,7 +111,7 @@ interface CardProps {
 interface BadgeProps {
   status: "success" | "warning" | "danger" | "info" | "neutral";
   children: ReactNode;
-  pulse?: boolean;   // animasi pulse halus, dipakai untuk status "Menunggu" di Halaman 5
+  pulse?: boolean;   // animasi pulse halus, dipakai untuk status "Menunggu" di Halaman Status
 }
 ```
 
@@ -145,42 +145,60 @@ interface StepIndicatorProps {
 
 ## 3. Struktur Halaman & Alur
 
+> **Perubahan penting:** Halaman poli (list & detail) sekarang **publik** — bisa diakses kapan saja tanpa cek NIK, murni untuk informasi jadwal. Proses pendaftaran (form) menjadi **halaman tersendiri**, baru muncul setelah user memilih jadwal dan lolos cek NIK.
+
+### 3.1 Halaman Publik (tanpa guard, tanpa step indicator)
+
 ```
-[1] Landing Page
-        │
-        ▼
-[2] Cek NIK ── belum terdaftar ──► Form Registrasi Pasien Baru ──┐
-        │                                                          │
-     sudah terdaftar                                               │
-        │                                                          │
-        ▼                                                          │
-[3] Daftar Poli ◄─────────────────────────────────────────────────┘
-        │
-        ▼
-[4] Detail Jadwal Poli + Form Pendaftaran
-        │
-        ▼
-[5] Status Pendaftaran (Identitas + Nomor Antrian)
+Landing Page
+   │
+   ├──► "Poli Tersedia" (preview) ──┐
+   │                                  │
+   └──► "Lihat Semua Poli" ──► Daftar Semua Poli (list) ──► Detail Poli + Jadwal
+                                                                    │
+                                                          klik "Daftar" pada
+                                                          jadwal dokter tertentu
+                                                                    │
+                                                                    ▼
+                                                        (masuk ke Alur Pendaftaran)
 ```
+
+### 3.2 Alur Pendaftaran (guarded, berurutan, dengan step indicator 1–3)
+
+```
+[1] Cek NIK ── belum terdaftar ──► Form Registrasi Pasien Baru ──┐
+      │                                                            │
+   sudah terdaftar                                                 │
+      │                                                            │
+      ▼                                                            │
+[2] Form Pendaftaran (ringkasan poli/dokter/tanggal + isi form) ◄──┘
+      │
+      ▼
+[3] Status Pendaftaran (Identitas + Nomor Antrian)
+```
+
+**Catatan alur masuk ke Cek NIK:**
+- Jika user datang dari tombol "Daftar" pada jadwal dokter tertentu (Detail Poli) → poli/dokter/tanggal yang dipilih ikut terbawa (disimpan sebagai `pendingSelection` di Zustand store), lalu setelah Cek NIK sukses langsung diarahkan ke Halaman Form Pendaftaran dengan data itu.
+- Jika user datang dari CTA generik "Daftar Poli Sekarang" di Navbar/Hero (belum memilih jadwal apa pun) → setelah Cek NIK sukses, user diarahkan kembali ke Daftar Semua Poli (publik) untuk memilih jadwal dulu, baru lanjut ke Form Pendaftaran.
 
 ---
 
 ## 4. Detail Per Halaman
 
-### 4.1 Halaman 1 — Landing Page
+### 4.1 Halaman — Landing Page
 
-**Tujuan:** Memberi kesan terpercaya & modern, entry point ke alur pendaftaran.
+**Tujuan:** Memberi kesan terpercaya & modern, entry point ke informasi poli maupun alur pendaftaran.
 
 **Struktur:**
-- **Header/Navbar:** Logo RS (kiri), menu (Beranda, Layanan, Jadwal Dokter, Kontak), tombol CTA "Daftar Poli Sekarang" (kanan, warna accent).
+- **Header/Navbar:** Logo RS (kiri), menu (Beranda, Layanan, Jadwal Dokter, Kontak), tombol CTA "Daftar Poli Sekarang" (kanan, warna accent) → ke `/cek-nik` (alur generik, tanpa jadwal terpilih).
 - **Hero section:**
   - Headline besar: contoh *"Pendaftaran Poli Lebih Cepat, Tanpa Antre Lama"*.
   - Sub-headline singkat penjelas layanan online.
-  - Tombol CTA utama besar: **"Cek Status Pendaftaran / Daftar Sekarang"** → ke halaman Cek NIK.
+  - Tombol CTA utama besar: **"Cek Status Pendaftaran / Daftar Sekarang"** → ke `/cek-nik`.
   - Ilustrasi/foto medis modern di sisi kanan (flat illustration bertema kesehatan, bukan foto stok generik).
   - Animasi: elemen hero fade-in bertahap (headline → sub → button → ilustrasi, stagger 100ms).
 - **Section "Keunggulan"** (3–4 kartu ikon): Cepat, Tanpa Antre di Lokasi, Real-time, Aman & Terverifikasi NIK. Animasi: reveal on scroll (fade+slide up saat masuk viewport).
-- **Section "Poli Tersedia"** — preview singkat 4–6 poli unggulan dalam card kecil, dengan tombol "Lihat Semua Poli".
+- **Section "Poli Tersedia"** — preview singkat 4–6 poli unggulan dalam card kecil (**publik, informasi saja**), klik card → `/poli/:poliId` (Detail Poli). Tombol **"Lihat Semua Poli"** → `/poli` (Daftar Semua Poli, publik).
 - **Section Info RS:** jam operasional, lokasi (mini map), kontak darurat.
 - **Footer:** info kontak, media sosial, jam layanan, disclaimer.
 
@@ -191,19 +209,22 @@ interface StepIndicatorProps {
 - [ ] Klik CTA "Daftar Poli Sekarang" (navbar maupun hero) mengarahkan ke `/cek-nik`.
 - [ ] Hero, section keunggulan, dan section poli tampil dengan animasi fade-in bertahap (bukan muncul instan).
 - [ ] Section "Poli Tersedia" menampilkan data asli dari `GET /api/poli` (atau mock jika backend belum siap) — bukan hardcode statis di komponen.
+- [ ] Klik card poli di section "Poli Tersedia" → navigasi ke `/poli/:poliId` (halaman publik, bukan halaman 404/kosong).
+- [ ] Tombol "Lihat Semua Poli" → navigasi ke `/poli` (halaman publik berisi grid semua poli, bukan halaman kosong).
 - [ ] Responsive: di mobile, hero stack vertikal (teks di atas, ilustrasi di bawah atau disembunyikan), tidak ada horizontal scroll.
 - [ ] Semua CTA/link punya `focus state` yang terlihat (keyboard navigation).
 
 ---
 
-### 4.2 Halaman 2 — Pengecekan NIK
+### 4.2 Halaman — Cek NIK *(guarded, step 1 dari 3)*
 
-**Tujuan:** Verifikasi cepat status kepesertaan/rekam medis pasien.
+**Tujuan:** Verifikasi cepat identitas pasien sebelum mengisi form pendaftaran.
 
 **Struktur:**
-- Layout terpusat (centered card), progress indicator kecil di atas (step 1 dari 4: *Cek NIK → Pilih Poli → Jadwal & Form → Status*).
+- Layout terpusat (centered card), progress indicator kecil di atas (step 1 dari 3: *Cek NIK → Form Pendaftaran → Status*).
 - Card berisi:
   - Judul: *"Masukkan NIK Anda"*.
+  - Ringkasan jadwal yang sudah dipilih (kalau user datang dari tombol "Daftar" di Detail Poli) — chip kecil di atas form: *"Poli Anak · dr. Sarah · Rabu, 20 Agustus"*. Kalau user datang dari CTA generik, chip ini tidak muncul.
   - Input NIK (16 digit), dengan validasi real-time (format angka, panjang digit) — border berubah merah/hijau saat mengetik.
   - Icon KTP/identitas di dalam input (leading icon).
   - Tombol **"Cek NIK"** (disabled sampai 16 digit terisi).
@@ -213,104 +234,122 @@ interface StepIndicatorProps {
 
 1. **NIK sudah terdaftar:**
    - Card sukses hijau muda, ikon centang, teks *"Data Anda ditemukan, [Nama Pasien]"*.
-   - Auto-redirect (dengan animasi transisi) ke Halaman 3 (Daftar Poli) setelah ±1.5 detik, atau tombol manual "Lanjut Pilih Poli".
+   - Tombol manual lanjut: jika ada `pendingSelection` (jadwal sudah dipilih) → *"Lanjut ke Form Pendaftaran"* (ke Halaman Form Pendaftaran). Jika tidak ada → *"Pilih Poli"* (ke `/poli`, halaman publik).
 
 2. **NIK belum terdaftar:**
    - Card info kuning, ikon info, teks *"NIK belum terdaftar sebagai pasien"*.
-   - Tombol **"Daftar sebagai Pasien Baru"** → membuka form registrasi data pasien baru (nama, tanggal lahir, jenis kelamin, alamat, no. HP, dll) — bisa berupa modal/drawer atau halaman terpisah — setelah submit lanjut otomatis ke Halaman 3.
+   - Tombol **"Daftar sebagai Pasien Baru"** → membuka form registrasi data pasien baru (nama, tanggal lahir, jenis kelamin, alamat, no. HP, dll) — modal/drawer atau halaman terpisah — setelah submit lanjut otomatis sesuai logika di atas (ke Form Pendaftaran atau ke `/poli`).
 
-**Animasi:** loading state saat submit ("Memeriksa data...") dengan skeleton/spinner halus bertema medis (misal denyut/pulse icon), lalu hasil muncul dengan slide-down + fade.
+**Animasi:** loading state saat submit ("Memeriksa data...") dengan skeleton/spinner halus bertema medis, lalu hasil muncul dengan slide-down + fade.
 
 **✅ Acceptance Criteria:**
 - [ ] Input NIK hanya menerima angka, maksimal 16 digit; tombol "Cek NIK" disabled sampai tepat 16 digit terisi.
 - [ ] Submit memanggil `POST /api/patients/check-nik` (lihat contoh payload di `architecture.md` Section 4.3.1) — bukan validasi dummy di frontend saja.
-- [ ] Kasus "NIK terdaftar": nama pasien dari response API ditampilkan, ada auto-redirect ATAU tombol manual lanjut (pilih salah satu, konsisten).
-- [ ] Kasus "NIK belum terdaftar": form registrasi baru muncul dengan field sesuai `architecture.md` (nama, tanggal lahir, jenis kelamin, alamat, no. HP), validasi Zod aktif per field.
+- [ ] Kasus "NIK terdaftar": nama pasien dari response API ditampilkan, tombol lanjut mengarah sesuai ada/tidaknya `pendingSelection` di store.
+- [ ] Kasus "NIK belum terdaftar": form registrasi baru muncul dengan field sesuai `architecture.md`, validasi Zod aktif per field.
 - [ ] Kasus error network/500: tampil `ErrorState` dengan tombol retry — bukan halaman blank/crash.
-- [ ] Data pasien hasil cek NIK tersimpan ke Zustand store sebelum navigasi ke Halaman 3.
+- [ ] Data pasien hasil cek NIK tersimpan ke Zustand store sebelum navigasi lanjut.
 - [ ] Refresh browser di halaman ini tidak menyebabkan crash (state kosong ditangani, kembali ke form awal).
 
 ---
 
-### 4.3 Halaman 3 — Daftar Poli
+### 4.3 Halaman — Daftar Semua Poli *(PUBLIK, tanpa guard, tanpa step indicator)*
 
-**Tujuan:** Pasien memilih poli tujuan dengan cepat dan visual jelas.
+**Tujuan:** Siapa saja bisa melihat daftar poli & jadwal, tanpa harus verifikasi identitas dulu. Diakses dari Landing ("Lihat Semua Poli") maupun navigasi langsung.
 
 **Struktur:**
-- Progress indicator: step 2 dari 4.
-- Search bar + filter di atas grid (cari nama poli, filter berdasarkan kategori: Umum, Spesialis, Gigi, dll).
+- Header sederhana: judul "Semua Poli", tanpa progress indicator (halaman ini bukan bagian dari wizard pendaftaran).
+- Search bar + filter di atas grid (cari nama poli, filter kategori: Umum, Spesialis, Gigi, dll).
 - **Grid card poli** (3 kolom desktop / 1 kolom mobile), tiap card berisi:
-  - Ikon/ilustrasi khas poli (jantung untuk Kardiologi, gigi untuk Gigi & Mulut, dll — warna ikon konsisten primary/secondary).
-  - Nama poli (contoh: Poli Anak, Poli Gigi, Poli Penyakit Dalam).
-  - Info singkat: jumlah dokter tersedia hari ini, estimasi kuota tersisa (badge: "Kuota tersisa 12" / "Kuota Penuh" berwarna sesuai status).
-  - Tombol "Pilih Poli" atau seluruh card clickable.
-- Card dengan kuota penuh: tampil dengan opacity lebih rendah + badge merah "Penuh", tetap bisa diklik untuk lihat jadwal hari berikutnya.
+  - Ikon/ilustrasi khas poli, nama poli.
+  - Info singkat: jumlah dokter tersedia hari ini, estimasi kuota tersisa (badge status).
+  - Seluruh card clickable → menuju Detail Poli (publik, informasi saja).
+- Card dengan kuota penuh: tampil dengan opacity lebih rendah + badge merah "Penuh", **tetap bisa diklik** (untuk lihat jadwal hari lain di halaman detail).
 
 **Interaktivitas & Animasi:**
 - Hover card: elevate (translateY -4px, shadow membesar), ikon sedikit scale-up.
-- Grid muncul dengan stagger fade-in saat halaman load (card muncul satu-satu, delay 50ms antar card).
-- Filter/search: hasil grid re-render dengan transisi fade cepat (tanpa flicker/reload kasar).
+- Grid muncul dengan stagger fade-in saat halaman load.
+- Filter/search: hasil grid re-render dengan transisi fade cepat.
 
 **✅ Acceptance Criteria:**
+- [ ] Halaman ini **dapat diakses langsung tanpa cek NIK** — tidak ada route guard/redirect ke `/cek-nik`.
 - [ ] Data poli diambil dari `GET /api/poli`, ditampilkan sebagai grid card dengan skeleton loading saat fetching.
-- [ ] Search box memfilter card secara real-time (debounce ~300ms) tanpa request baru ke server jika data sudah di-cache (filter client-side dari data yang sudah ada).
-- [ ] Card dengan kuota penuh: visual disabled (opacity turun, badge "Penuh"), tapi tetap bisa diklik untuk redirect ke halaman detail (agar user bisa lihat jadwal hari lain).
-- [ ] Klik card poli → menyimpan `selectedPoli` ke Zustand store → navigasi ke `/poli/:poliId`.
-- [ ] Redirect ke `/cek-nik` jika `patient` di store kosong (user belum lewat Halaman 2 — misal akses langsung via URL).
-- [ ] State kosong (tidak ada poli sama sekali / hasil search kosong) menampilkan `EmptyState`, bukan grid kosong tanpa keterangan.
+- [ ] Search box memfilter card secara real-time (debounce ~300ms), filter client-side dari data yang sudah di-cache.
+- [ ] Klik card poli (termasuk yang kuota penuh) → navigasi ke `/poli/:poliId` (tidak menyimpan apa pun ke Zustand di titik ini — hanya navigasi).
+- [ ] State kosong menampilkan `EmptyState`, bukan grid kosong tanpa keterangan.
 
 ---
 
-### 4.4 Halaman 4 — Detail Jadwal Poli + Form Pendaftaran
+### 4.4 Halaman — Detail Poli & Jadwal *(PUBLIK, tanpa guard, informasi saja — TIDAK ADA FORM di sini)*
 
-**Tujuan:** Menampilkan info jadwal lengkap lalu memudahkan pasien langsung mengisi form di bawahnya (satu halaman, tanpa pindah-pindah).
+**Tujuan:** Menampilkan info poli & jadwal dokter secara lengkap, murni untuk dilihat. Tombol "Daftar" di sini hanya memulai alur pendaftaran (pindah ke Cek NIK), bukan menampilkan form di halaman yang sama.
 
-**Struktur (top → bottom, satu scroll flow):**
+**Struktur (top → bottom):**
 
 **A. Header Detail Poli**
-- Judul poli + ikon, breadcrumb (Beranda / Daftar Poli / [Nama Poli]).
-- Tombol "← Ganti Poli".
+- Judul poli + ikon, breadcrumb (Beranda / Semua Poli / [Nama Poli]).
+- Tombol "← Kembali ke Semua Poli".
+- Deskripsi singkat poli (opsional, kalau ada dari API).
 
 **B. Section Jadwal Dokter**
-- Tab atau list horizontal-scroll untuk memilih **tanggal** (7 hari ke depan, tampil sebagai chip tanggal: hari + tanggal, hari ini di-highlight).
+- Tab atau list horizontal-scroll untuk memilih **tanggal** (7 hari ke depan, chip tanggal, hari ini di-highlight).
 - Setelah tanggal dipilih → tampil **list/card dokter** yang praktik di tanggal tersebut:
   - Foto/avatar dokter, nama, spesialisasi, jam praktik, sisa kuota (badge angka).
   - Card dokter dengan kuota penuh dinonaktifkan (disabled state, badge "Penuh").
-  - Radio-select style card (klik untuk memilih dokter → card ter-highlight dengan border teal + checkmark).
+  - Setiap card dokter (yang tersedia) punya tombol **"Daftar"** — klik ini yang memulai alur pendaftaran, BUKAN memilih dokter untuk form di halaman yang sama.
 
-**C. Form Pendaftaran** (muncul di bawah, smooth-scroll otomatis ke sini setelah dokter dipilih, atau selalu tampil tapi disabled sampai dokter dipilih)
-- Ringkasan pilihan di atas form (chip: "Poli Anak · dr. Sarah · Rabu, 20 Agustus · 09.00–12.00").
+**Saat tombol "Daftar" diklik:**
+- Data `{ poliId, doctorId, date }` disimpan sebagai `pendingSelection` di Zustand store.
+- Navigasi ke `/cek-nik`.
+- (Ringkasan jadwal ini akan ditampilkan lagi di Halaman Cek NIK dan Halaman Form Pendaftaran, lihat Section 4.2 & 4.5.)
+
+**Animasi & interaktivitas:**
+- Transisi antar tanggal: konten dokter fade-out/fade-in saat ganti tanggal (bukan reload kasar).
+- Hover pada tombol "Daftar": scale + shadow sesuai prinsip Button di Section 2.5.
+
+**✅ Acceptance Criteria:**
+- [ ] Halaman ini **dapat diakses langsung tanpa cek NIK** — tidak ada route guard.
+- [ ] **Tidak ada form pendaftaran di halaman ini** — hanya info poli + jadwal + tombol "Daftar" per dokter.
+- [ ] Chip tanggal default memilih hari ini; ganti tanggal memicu `GET /api/poli/:id/schedules?date=...` dengan transisi fade.
+- [ ] Dokter dengan kuota penuh tampil disabled, tombol "Daftar" tidak muncul/disabled untuknya.
+- [ ] Klik "Daftar" pada dokter tersedia → simpan `pendingSelection` ke Zustand → navigasi ke `/cek-nik`.
+
+---
+
+### 4.5 Halaman — Form Pendaftaran *(guarded, step 2 dari 3 — halaman baru, terpisah dari Detail Poli)*
+
+**Tujuan:** Setelah identitas terverifikasi, pasien menyelesaikan pendaftaran untuk jadwal yang sudah dipilih sebelumnya.
+
+**Struktur:**
+- Progress indicator: step 2 dari 3.
+- Ringkasan pilihan di atas form (chip: "Poli Anak · dr. Sarah · Rabu, 20 Agustus · 09.00–12.00"), diambil dari `pendingSelection` di Zustand — kalau kosong (misal user akses halaman ini langsung tanpa pilih jadwal), redirect ke `/poli`.
 - Field form:
   - Data pasien (auto-terisi dari hasil cek NIK, read-only atau editable minimal).
   - Keluhan singkat / catatan (textarea opsional).
   - Metode kedatangan: Datang langsung / dijemput (jika relevan).
   - Checkbox persetujuan data.
-- Tombol besar **"Konfirmasi Pendaftaran"** (full-width di mobile), sticky di bawah layar pada mobile agar selalu terlihat.
+- Tombol besar **"Konfirmasi Pendaftaran"** (full-width di mobile), sticky di bawah layar pada mobile.
 
 **Animasi & interaktivitas:**
-- Transisi antar tanggal: konten dokter fade-out/fade-in saat ganti tanggal (bukan reload kasar).
-- Saat memilih dokter: card lain sedikit redup (opacity turun), card terpilih menonjol.
-- Progress indicator step 3 dari 4.
-- Submit form: tombol berubah menjadi loading state (spinner inline + teks "Memproses...") → transisi ke Halaman 5.
+- Halaman masuk dengan fade+slide-up sesuai page transition standar.
+- Submit form: tombol berubah menjadi loading state (spinner inline + teks "Memproses...") → transisi ke Halaman Status.
 
 **✅ Acceptance Criteria:**
-- [ ] Chip tanggal default memilih hari ini; klik chip lain memicu `GET /api/poli/:id/schedules?date=...` dan re-render list dokter dengan transisi fade (bukan reload halaman).
-- [ ] Dokter dengan kuota penuh tampil disabled, tidak bisa dipilih.
-- [ ] Memilih dokter meng-highlight card terpilih (border teal + checkmark) dan meng-enable form pendaftaran di bawahnya.
-- [ ] Form pendaftaran menggunakan React Hook Form + Zod; field wajib (checkbox persetujuan) tidak bisa disubmit kalau belum dicentang.
-- [ ] Data pasien di form terisi otomatis dari Zustand store (hasil Halaman 2), tidak perlu input ulang.
-- [ ] Submit memanggil `POST /api/registrations` (lihat contoh payload di `architecture.md` Section 4.3.1); error 422 dari server dipetakan ke field form yang relevan.
-- [ ] Setelah sukses, response (termasuk `queue_number` dan `registration_id`) disimpan ke Zustand dan user dinavigasikan ke `/status/:registrationId`.
-- [ ] Redirect ke `/poli` jika `selectedPoli` kosong di store (akses langsung tanpa lewat Halaman 3).
+- [ ] Redirect ke `/poli` jika `pendingSelection` kosong di store (user akses halaman ini tanpa memilih jadwal dulu).
+- [ ] Redirect ke `/cek-nik` jika `patient` kosong di store (user belum verifikasi identitas).
+- [ ] Form pendaftaran menggunakan React Hook Form + Zod; checkbox persetujuan wajib dicentang sebelum submit.
+- [ ] Data pasien di form terisi otomatis dari Zustand store, tidak perlu input ulang.
+- [ ] Submit memanggil `POST /api/registrations` dengan payload dari `pendingSelection` + data form (lihat contoh di `architecture.md` Section 4.3.1); error 422 dipetakan ke field form yang relevan.
+- [ ] Setelah sukses, response (`queue_number`, `registration_id`) disimpan ke Zustand, `pendingSelection` di-clear, dan user dinavigasikan ke `/status/:registrationId`.
 
 ---
 
-### 4.5 Halaman 5 — Status Pendaftaran
+### 4.6 Halaman — Status Pendaftaran *(guarded, step 3 dari 3)*
 
 **Tujuan:** Konfirmasi jelas & mudah dibaca dari jarak jauh (seperti layar antrian), menampilkan identitas dan nomor antrian.
 
 **Struktur:**
-- Progress indicator: step 4 dari 4 — selesai (centang penuh).
+- Progress indicator: step 3 dari 3 — selesai (centang penuh).
 - **Hero status card** (di tengah, paling menonjol):
   - Ikon centang besar dengan animasi draw-on (checkmark path animation) saat halaman pertama kali muncul.
   - Teks: *"Pendaftaran Berhasil!"*.
@@ -323,12 +362,12 @@ interface StepIndicatorProps {
   - Tombol "Unduh/Cetak Bukti Pendaftaran" (PDF/kartu digital).
   - Tombol "Simpan ke layar utama / Kirim ke WhatsApp" (opsional).
   - Link "Kembali ke Beranda".
-- Opsional: live-update posisi antrian (polling/websocket) dengan animasi angka berkurang (count-down transition) jika terhubung ke sistem antrian real-time.
+- Update posisi antrian via **polling** (`refetchInterval`, bukan WebSocket — lihat `architecture.md`) dengan animasi angka berkurang (count-down transition).
 
 **Animasi:** seluruh halaman masuk dengan efek celebratory ringan tapi tetap profesional — bukan confetti berlebihan, cukup checkmark animation + fade/scale nomor antrian, agar tetap terasa medis-profesional bukan seperti e-commerce.
 
 **✅ Acceptance Criteria:**
-- [ ] Data status diambil dari `GET /api/registrations/:id` — bisa langsung dari state hasil submit Halaman 4 sebagai initial data, lalu tetap fetch ulang agar refresh-safe.
+- [ ] Data status diambil dari `GET /api/registrations/:id` — bisa langsung dari state hasil submit Halaman Form Pendaftaran sebagai initial data, lalu tetap fetch ulang agar refresh-safe.
 - [ ] NIK ditampilkan dengan masking (contoh: `32xxxxxxxxxx123`), tidak pernah menampilkan NIK penuh di halaman ini.
 - [ ] Nomor antrian menggunakan font Display sesuai `design.md` Section 2.2, tampil dominan di atas fold (tanpa perlu scroll di desktop).
 - [ ] Polling aktif (`refetchInterval`, lihat `architecture.md` Section 4) untuk update posisi antrian/status secara berkala — bukan sekali fetch lalu statis.
@@ -365,7 +404,7 @@ interface StepIndicatorProps {
 
 - **Frontend:** Vite + React + TypeScript, Tailwind CSS untuk styling sesuai design token di atas, Framer Motion untuk animasi.
 - **Icon:** `lucide-react`.
-- **Backend:** Laravel (REST API, dikembangkan terpisah) — endpoint cek NIK, list poli, jadwal dokter, submit pendaftaran, status antrian. Status antrian di Halaman 5 memakai **polling sederhana**, bukan WebSocket (lihat `architecture.md` & `AGENTS.md`).
+- **Backend:** Laravel (REST API, dikembangkan terpisah) — endpoint cek NIK, list poli, jadwal dokter, submit pendaftaran, status antrian. Status antrian di Halaman Status memakai **polling sederhana**, bukan WebSocket (lihat `architecture.md` & `AGENTS.md`).
 
 ---
 
