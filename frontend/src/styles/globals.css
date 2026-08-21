@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+@layer theme {
+  :root {
+    /* Colors */
+    --color-primary: #0f9b8e;
+    --color-primary-dark: #0b7a70;
+    --color-primary-light: #e6f7f5;
+    --color-secondary: #3b82c4;
+    --color-accent: #ff7a59;
+    --color-success: #22a366;
+    --color-warning: #f5a623;
+    --color-danger: #e5484d;
+    --color-bg-base: #f7fafa;
+    --color-surface: #ffffff;
+    --color-text-primary: #16221f;
+    --color-text-secondary: #5b6b68;
+    --color-border: #e2e8e7;
+
+    /* Spacing */
+    --spacing-8: 8px;
+    --spacing-16: 16px;
+    --spacing-24: 24px;
+    --spacing-32: 32px;
+    --spacing-48: 48px;
+    --spacing-64: 64px;
+
+    /* Border Radius */
+    --radius-card: 16px;
+    --radius-input: 12px;
+
+    /* Typography */
+    --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    --font-mono: 'Space Grotesk', 'JetBrains Mono', monospace;
+  }
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    font-weight: 400;
+    color: var(--color-text-primary);
+    background: var(--color-bg-base);
+    margin: 0;
+  }
+
+  /* Support prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Print styles for Registration Status Page */
+  @media print {
+    @page {
+      margin: 20mm;
+      size: A4;
+    }
+
+    body {
+      background: white !important;
+      color: black !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Hide non-printable elements */
+    .no-print,
+    [class*="sticky"],
+    button,
+    .sticky,
+    .fixed,
+    nav,
+    .action-buttons,
+    .polling-indicator {
+      display: none !important;
+    }
+
+    /* Page container */
+    .min-h-screen {
+      min-height: auto !important;
+      padding: 0 !important;
+    }
+
+    .max-w-2xl {
+      max-width: none !important;
+      margin: 0 !important;
+    }
+
+    /* Step indicator - hide or show compact */
+    .step-indicator,
+    [class*="StepIndicator"] {
+      display: none !important;
+    }
+
+    /* Hero status card - optimize for print */
+    .hero-status-card,
+    [class*="rounded-2xl"] {
+      box-shadow: none !important;
+      border: 1px solid #e2e8e7 !important;
+      page-break-inside: avoid;
+      margin-bottom: 24px !important;
+    }
+
+    /* Queue number - ensure visibility */
+    [style*="fontSize"] {
+      color: black !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Status badge - ensure colors print */
+    [style*="backgroundColor"],
+    [style*="color: var(--color"] {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Patient summary card */
+    [class*="PatientSummaryCard"],
+    [class*="space-y-4"] > div {
+      page-break-inside: avoid;
+      border: 1px solid #e2e8e7 !important;
+      background: white !important;
+    }
+
+    /* Hide action buttons section */
+    .mt-8.space-y-6,
+    .grid.grid-cols-2.gap-3 {
+      display: none !important;
+    }
+
+    /* Ensure text is black */
+    * {
+      color: black !important;
+      text-shadow: none !important;
+    }
+
+    /* Links - show URL if needed */
+    a[href]::after {
+      content: none !important;
+    }
+
+    /* Ensure queue number prints large */
+    span[style*="clamp"] {
+      font-size: 80pt !important;
+      line-height: 1.1 !important;
+    }
+  }
+}
