@@ -1,223 +1,264 @@
-import type { PoliListResponse, PoliDetailResponse } from "./types";
+import type { PoliListResponse, PoliDetailResponse, DoctorScheduleResponse } from "./types";
 
 // TODO: replace mock — waiting for real endpoint from backend
 export const mockPoliList: PoliListResponse = {
+  success: true,
+  message: "Data poli non BPJS yang tersedia hari ini.",
   data: [
     {
-      id: "POLI-01",
+      id: "poli_anak",
+      slug_poli: "poli_anak",
       name: "Poli Anak",
+      nama_poli: "Poli Anak",
       category: "Spesialis",
       icon: "baby",
-      doctors_today: 3,
-      quota_remaining: 12,
-      quota_status: "available",
+      jumlah_dokter: 1,
+      jam_praktek: "14:30 - 16:00",
       description: "Melayani pemeriksaan dan konsultasi kesehatan anak usia 0-18 tahun.",
     },
     {
-      id: "POLI-02",
-      name: "Poli Gigi",
-      category: "Gigi",
-      icon: "tooth",
-      doctors_today: 1,
-      quota_remaining: 0,
-      quota_status: "full",
-      description: "Melayani pemeriksaan dan perawatan kesehatan gigi dan mulut.",
-    },
-    {
-      id: "POLI-03",
-      name: "Poli Umum",
-      category: "Umum",
-      icon: "stethoscope",
-      doctors_today: 5,
-      quota_remaining: 25,
-      quota_status: "available",
-      description: "Pemeriksaan kesehatan umum dan konsultasi penyakit dalam.",
-    },
-    {
-      id: "POLI-04",
-      name: "Poli Jantung",
+      id: "poli_bedah",
+      slug_poli: "poli_bedah",
+      name: "Poli Bedah Umum",
+      nama_poli: "Poli Bedah Umum",
       category: "Spesialis",
       icon: "heart",
-      doctors_today: 2,
-      quota_remaining: 8,
-      quota_status: "available",
+      jumlah_dokter: 1,
+      jam_praktek: "13:00 - 14:00",
+      description: "Melayani operasi dan tindakan bedah umum.",
+    },
+    {
+      id: "poli_jantung",
+      slug_poli: "poli_jantung",
+      name: "Poli Jantung dan Pembuluh Darah",
+      nama_poli: "Poli Jantung dan Pembuluh Darah",
+      category: "Spesialis",
+      icon: "heart",
+      jumlah_dokter: 1,
+      jam_praktek: "07:00 - 08:30",
       description: "Konsultasi dan penanganan penyakit jantung dan pembuluh darah.",
     },
     {
-      id: "POLI-05",
+      id: "poli_mata",
+      slug_poli: "poli_mata",
       name: "Poli Mata",
+      nama_poli: "Poli Mata",
       category: "Spesialis",
       icon: "eye",
-      doctors_today: 2,
-      quota_remaining: 15,
-      quota_status: "available",
+      jumlah_dokter: 2,
+      jam_praktek: "14:00 - 16:00, 15:30 - 16:30",
       description: "Pemeriksaan dan perawatan kesehatan mata.",
     },
     {
-      id: "POLI-06",
-      name: "Poli Kulit",
+      id: "poli_orthopedy",
+      slug_poli: "poli_orthopedy",
+      name: "Poli Orthopedi",
+      nama_poli: "Poli Orthopedi",
       category: "Spesialis",
-      icon: "droplet",
-      doctors_today: 1,
-      quota_remaining: 6,
-      quota_status: "available",
-      description: "Konsultasi dan penanganan penyakit kulit dan kelamin.",
+      icon: "activity",
+      jumlah_dokter: 1,
+      jam_praktek: "13:30 - 15:00",
+      description: "Konsultasi dan penanganan penyakit tulang dan sendi.",
+    },
+    {
+      id: "poli_paru",
+      slug_poli: "poli_paru",
+      name: "Poli Paru",
+      nama_poli: "Poli Paru",
+      category: "Spesialis",
+      icon: "activity",
+      jumlah_dokter: 1,
+      jam_praktek: "16:00 - 18:00",
+      description: "Konsultasi dan penanganan penyakit paru-paru.",
+    },
+    {
+      id: "poli_interne",
+      slug_poli: "poli_interne",
+      name: "Poli Penyakit Dalam",
+      nama_poli: "Poli Penyakit Dalam",
+      category: "Spesialis",
+      icon: "stethoscope",
+      jumlah_dokter: 2,
+      jam_praktek: "10:00 - 11:30, 15:00 - 17:00",
+      description: "Pemeriksaan kesehatan umum dan konsultasi penyakit dalam.",
+    },
+    {
+      id: "poli_syaraf",
+      slug_poli: "poli_syaraf",
+      name: "Poli Saraf",
+      nama_poli: "Poli Saraf",
+      category: "Spesialis",
+      icon: "brain",
+      jumlah_dokter: 1,
+      jam_praktek: "15:00 - 17:00",
+      description: "Konsultasi dan penanganan penyakit saraf.",
     },
   ],
 };
 
 export const mockPoliDetail: Record<string, PoliDetailResponse> = {
-  "POLI-01": {
+  "poli_anak": {
+    success: true,
+    message: "Detail poli anak",
     data: {
-      id: "POLI-01",
+      id: "poli_anak",
+      slug_poli: "poli_anak",
       name: "Poli Anak",
+      nama_poli: "Poli Anak",
       category: "Spesialis",
       icon: "baby",
-      doctors_today: 3,
-      quota_remaining: 12,
-      quota_status: "available",
+      jumlah_dokter: 1,
+      jam_praktek: "14:30 - 16:00",
       description: "Melayani pemeriksaan dan konsultasi kesehatan anak usia 0-18 tahun.",
     },
   },
-  "POLI-02": {
+  "poli_bedah": {
+    success: true,
+    message: "Detail poli bedah",
     data: {
-      id: "POLI-02",
-      name: "Poli Gigi",
-      category: "Gigi",
-      icon: "tooth",
-      doctors_today: 1,
-      quota_remaining: 0,
-      quota_status: "full",
-      description: "Melayani pemeriksaan dan perawatan kesehatan gigi dan mulut.",
-    },
-  },
-  "POLI-03": {
-    data: {
-      id: "POLI-03",
-      name: "Poli Umum",
-      category: "Umum",
-      icon: "stethoscope",
-      doctors_today: 5,
-      quota_remaining: 25,
-      quota_status: "available",
-      description: "Pemeriksaan kesehatan umum dan konsultasi penyakit dalam.",
-    },
-  },
-  "POLI-04": {
-    data: {
-      id: "POLI-04",
-      name: "Poli Jantung",
+      id: "poli_bedah",
+      slug_poli: "poli_bedah",
+      name: "Poli Bedah Umum",
+      nama_poli: "Poli Bedah Umum",
       category: "Spesialis",
       icon: "heart",
-      doctors_today: 2,
-      quota_remaining: 8,
-      quota_status: "available",
+      jumlah_dokter: 1,
+      jam_praktek: "13:00 - 14:00",
+      description: "Melayani operasi dan tindakan bedah umum.",
+    },
+  },
+  "poli_jantung": {
+    success: true,
+    message: "Detail poli jantung",
+    data: {
+      id: "poli_jantung",
+      slug_poli: "poli_jantung",
+      name: "Poli Jantung dan Pembuluh Darah",
+      nama_poli: "Poli Jantung dan Pembuluh Darah",
+      category: "Spesialis",
+      icon: "heart",
+      jumlah_dokter: 1,
+      jam_praktek: "07:00 - 08:30",
       description: "Konsultasi dan penanganan penyakit jantung dan pembuluh darah.",
     },
   },
-  "POLI-05": {
+  "poli_mata": {
+    success: true,
+    message: "Detail poli mata",
     data: {
-      id: "POLI-05",
+      id: "poli_mata",
+      slug_poli: "poli_mata",
       name: "Poli Mata",
+      nama_poli: "Poli Mata",
       category: "Spesialis",
       icon: "eye",
-      doctors_today: 2,
-      quota_remaining: 15,
-      quota_status: "available",
+      jumlah_dokter: 2,
+      jam_praktek: "14:00 - 16:00, 15:30 - 16:30",
       description: "Pemeriksaan dan perawatan kesehatan mata.",
     },
   },
-  "POLI-06": {
+  "poli_orthopedy": {
+    success: true,
+    message: "Detail poli orthopedi",
     data: {
-      id: "POLI-06",
-      name: "Poli Kulit",
+      id: "poli_orthopedy",
+      slug_poli: "poli_orthopedy",
+      name: "Poli Orthopedi",
+      nama_poli: "Poli Orthopedi",
       category: "Spesialis",
-      icon: "droplet",
-      doctors_today: 1,
-      quota_remaining: 6,
-      quota_status: "available",
-      description: "Konsultasi dan penanganan penyakit kulit dan kelamin.",
+      icon: "activity",
+      jumlah_dokter: 1,
+      jam_praktek: "13:30 - 15:00",
+      description: "Konsultasi dan penanganan penyakit tulang dan sendi.",
+    },
+  },
+  "poli_paru": {
+    success: true,
+    message: "Detail poli paru",
+    data: {
+      id: "poli_paru",
+      slug_poli: "poli_paru",
+      name: "Poli Paru",
+      nama_poli: "Poli Paru",
+      category: "Spesialis",
+      icon: "activity",
+      jumlah_dokter: 1,
+      jam_praktek: "16:00 - 18:00",
+      description: "Konsultasi dan penanganan penyakit paru-paru.",
+    },
+  },
+  "poli_interne": {
+    success: true,
+    message: "Detail poli penyakit dalam",
+    data: {
+      id: "poli_interne",
+      slug_poli: "poli_interne",
+      name: "Poli Penyakit Dalam",
+      nama_poli: "Poli Penyakit Dalam",
+      category: "Spesialis",
+      icon: "stethoscope",
+      jumlah_dokter: 2,
+      jam_praktek: "10:00 - 11:30, 15:00 - 17:00",
+      description: "Pemeriksaan kesehatan umum dan konsultasi penyakit dalam.",
+    },
+  },
+  "poli_syaraf": {
+    success: true,
+    message: "Detail poli saraf",
+    data: {
+      id: "poli_syaraf",
+      slug_poli: "poli_syaraf",
+      name: "Poli Saraf",
+      nama_poli: "Poli Saraf",
+      category: "Spesialis",
+      icon: "brain",
+      jumlah_dokter: 1,
+      jam_praktek: "15:00 - 17:00",
+      description: "Konsultasi dan penanganan penyakit saraf.",
     },
   },
 };
 
 const generateDoctorSchedule = (poliId: string, date: string) => {
-  const dayOfMonth = new Date(date).getDate();
-  
-  if (poliId === "POLI-01") {
-    return {
-      data: {
-        poli: { id: "POLI-01", name: "Poli Anak" },
-        date,
-        doctors: [
-          {
-            id: "DOK-01",
-            name: "dr. Sarah Wijaya, Sp.A",
-            avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
-            practice_hours: "09:00-12:00",
-            quota_remaining: dayOfMonth % 2 === 0 ? 0 : 5,
-            quota_status: dayOfMonth % 2 === 0 ? "full" : "available",
-          },
-          {
-            id: "DOK-02",
-            name: "dr. Andi Prasetyo, Sp.A",
-            avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=andi",
-            practice_hours: "13:00-16:00",
-            quota_remaining: dayOfMonth % 3 === 0 ? 0 : 8,
-            quota_status: dayOfMonth % 3 === 0 ? "full" : "available",
-          },
-        ],
-      },
-    };
-  }
-  
-  if (poliId === "POLI-02") {
-    return {
-      data: {
-        poli: { id: "POLI-02", name: "Poli Gigi" },
-        date,
-        doctors: [
-          {
-            id: "DOK-03",
-            name: "dr. Maya Sari, Sp.KG",
-            avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=maya",
-            practice_hours: "08:00-11:00",
-            quota_remaining: 6,
-            quota_status: "available",
-          },
-        ],
-      },
-    };
-  }
-  
-  // Default for other polis
+  const doctor = {
+    id: "DOK-01",
+    name: "dr. Dokter Utama",
+    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=dokter",
+    practice_hours: "08:00-12:00",
+    quota_remaining: 10,
+    quota_status: "available" as const,
+    status: "BUKA" as const,
+    source: "bpjs" as const,
+  };
+
   return {
     data: {
-      poli: { id: poliId, name: "Poli" },
+      poli: { id: poliId, name: mockPoliDetail[poliId]?.data?.nama_poli || "Poli" },
       date,
-      doctors: [
-        {
-          id: "DOK-01",
-          name: "dr. Dokter Utama",
-          practice_hours: "08:00-12:00",
-          quota_remaining: 10,
-          quota_status: "available",
-        },
-      ],
+      doctors: [doctor],
     },
   };
 };
 
-export const mockDoctorSchedule: Record<string, any> = {};
+export const mockDoctorSchedule: Record<string, DoctorScheduleResponse> = {};
 
-// Generate schedules for the next 7 days for each poli
-const polis = ["POLI-01", "POLI-02", "POLI-03", "POLI-04", "POLI-05", "POLI-06"];
+const polis = [
+  "poli_anak",
+  "poli_bedah",
+  "poli_jantung",
+  "poli_mata",
+  "poli_orthopedy",
+  "poli_paru",
+  "poli_interne",
+  "poli_syaraf",
+];
+
 const today = new Date();
 for (let i = 0; i < 7; i++) {
   const date = new Date(today);
   date.setDate(today.getDate() + i);
   const dateStr = date.toISOString().split("T")[0];
-  
+
   for (const poliId of polis) {
     mockDoctorSchedule[`${poliId}-${dateStr}`] = generateDoctorSchedule(poliId, dateStr);
   }

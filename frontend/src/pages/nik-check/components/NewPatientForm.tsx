@@ -2,9 +2,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
 import { Input } from "../../../shared/components/ui/Input";
 import { Button } from "../../../shared/components/ui/Button";
 import { User, Calendar, MapPin, Phone } from "lucide-react";
+
+// Tanggal hari ini dalam waktu lokal (bukan UTC)
+const todayLocal = format(new Date(), "yyyy-MM-dd");
 
 const newPatientSchema = z.object({
   nik: z.string().length(16, "NIK harus 16 digit"),
@@ -107,7 +111,7 @@ export function NewPatientForm({ nik, onSubmit, isLoading = false, error, onCanc
           type="date"
           error={errors.birth_date?.message}
           leadingIcon={<Calendar className="w-5 h-5" />}
-          max={new Date().toISOString().split("T")[0]}
+          max={todayLocal}
           {...register("birth_date")}
         />
 

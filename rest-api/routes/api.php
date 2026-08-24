@@ -26,6 +26,12 @@ Route::middleware(['throttle:api'])->group(function () {
             // Route::post('/antrians', 'App\Http\Controllers\Api\AntrianController@store');
             // Route::get('/antrians/hari-ini', 'App\Http\Controllers\Api\AntrianController@today');
             // Route::get('/antrians/{id}', 'App\Http\Controllers\Api\AntrianController@show');
+
+            Route::group(['controller' => 'App\Http\Controllers\Api\PoliController'], function () {
+                Route::get('/poli-data', 'get_poli');
+                Route::get('/poli/{slug_poli}', 'get_poli_by_slug');
+                Route::get('/poli/{slug_poli}/schedules', 'get_jadwal_poli');
+            });
         });
 
         // Route::middleware(['throttle:api-auth'])->group(function () {

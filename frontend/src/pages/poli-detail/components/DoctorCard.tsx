@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
 import { Card } from "../../../shared/components/ui/Card";
 import { Badge } from "../../../shared/components/ui/Badge";
 import { Button } from "../../../shared/components/ui/Button";
@@ -11,6 +10,9 @@ interface DoctorCardProps {
 }
 
 export function DoctorCard({ doctor, onDaftar }: DoctorCardProps) {
+  // Opsi A: Tombol aktif kecuali kuota penuh (BPJS dengan sisa = 0)
+  // Non-BPJS (unlimited) tidak pernah disabled
+  // BPJS: disabled jika quota_status === "full" (sisa = 0)
   const isDisabled = doctor.quota_status === "full";
 
   return (
@@ -41,24 +43,34 @@ export function DoctorCard({ doctor, onDaftar }: DoctorCardProps) {
             )}
             {isDisabled && (
               <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">Penuh</span>
+                <span className="text-sm font-medium text-white">Kuota Penuh</span>
               </div>
             )}
           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h4 className="text-lg font-semibold truncate" style={{ color: "var(--color-text-primary)" }}>
-              {doctor.name}
-            </h4>
-            <p className="text-sm mt-1" style={{ color: "var(--color-text-secondary)" }}>
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="text-lg font-semibold truncate" style={{ color: "var(--color-text-primary)" }}>
+                {doctor.name}
+              </h4>
+            </div>
+            <p className="text-sm mb-2" style={{ color: "var(--color-text-secondary)" }}>
               {doctor.practice_hours}
             </p>
             <Badge
-              status={doctor.quota_status === "available" ? "success" : "danger"}
-              className="mt-2 inline-flex"
+              status={
+                doctor.quota_status === "unlimited"
+                  ? "info"
+                  : doctor.quota_status === "available"
+                  ? "success"
+                  : "danger"
+              }
+              className="inline-flex"
             >
-              {doctor.quota_status === "available"
+              {doctor.quota_status === "unlimited"
+                ? "∞"
+                : doctor.quota_status === "available"
                 ? `Kuota tersisa ${doctor.quota_remaining}`
                 : "Kuota Penuh"}
             </Badge>
@@ -66,20 +78,14 @@ export function DoctorCard({ doctor, onDaftar }: DoctorCardProps) {
 
           {/* Tombol Daftar */}
           <div className="flex-shrink-0">
-            {isDisabled ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled
-                className="opacity-50 cursor-not-allowed"
-              >
-                Penuh
-              </Button>
-            ) : (
-              <Button variant="primary" size="sm" onClick={onDaftar} icon={<ChevronRight className="w-4 h-4" />}>
-                Daftar
-              </Button>
-            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onDaftar}
+              disabled={isDisabled}
+            >
+              Daftar
+            </Button>
           </div>
         </div>
       </Card>

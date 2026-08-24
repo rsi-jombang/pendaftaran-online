@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ChevronLeft, Baby, Heart, Eye, Stethoscope, Droplet, Activity } from "lucide-react";
+import { ChevronLeft, Baby, Heart, Eye, Stethoscope, Droplet, Activity, Brain, Users, Clock } from "lucide-react";
 import { Button, Skeleton } from "../../shared/components/ui";
 import { DateChipSelector } from "./components/DateChipSelector";
 import { DoctorCard } from "./components/DoctorCard";
@@ -15,12 +15,11 @@ import { id } from "date-fns/locale";
 export function PoliDetailPage() {
   const navigate = useNavigate();
   const { poliId } = useParams<{ poliId: string }>();
+  const slugPoli = poliId ?? null;
   const { setPendingSelection } = useRegistrationFlowStore();
 
-  const poliIdParam = poliId ?? null;
-
-  // Fetch poli detail dari API menggunakan poliId dari URL
-  const { data: poliData, isLoading: isPoliLoading } = usePoliDetail(poliIdParam);
+  // Fetch poli detail dari API menggunakan slug_poli dari URL
+  const { data: poliData, isLoading: isPoliLoading } = usePoliDetail(slugPoli);
 
   // Date state - default hari ini
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
@@ -30,22 +29,20 @@ export function PoliDetailPage() {
   });
 
   // Fetch jadwal dokter berdasarkan tanggal
-  const { data: scheduleData, isLoading } = useDoctorSchedule(poliIdParam, formatDate(selectedDate));
+  const { data: scheduleData, isLoading } = useDoctorSchedule(slugPoli, formatDate(selectedDate));
 
   const handleDoctorSelect = (doctor: Doctor) => {
-    if (doctor.quota_status === "available") {
-      const poli = poliData?.data;
-      if (poli) {
-        setPendingSelection({
-          poliId: poli.id,
-          poliName: poli.name,
-          doctorId: doctor.id,
-          doctorName: doctor.name,
-          date: formatDate(selectedDate),
-          practiceHours: doctor.practice_hours,
-        });
-        navigate("/cek-nik");
-      }
+    const poli = poliData?.data;
+    if (poli) {
+      setPendingSelection({
+        poliId: poli.slug_poli,
+        poliName: poli.nama_poli,
+        doctorId: doctor.id,
+        doctorName: doctor.name,
+        date: formatDate(selectedDate),
+        practiceHours: doctor.practice_hours,
+      });
+      navigate("/cek-nik");
     }
   };
 
@@ -91,7 +88,7 @@ export function PoliDetailPage() {
               <span>/</span>
               <Link to="/poli" className="hover:underline">Semua Poli</Link>
               <span>/</span>
-              <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{poli.name}</span>
+              <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{poli.nama_poli}</span>
             </nav>
 
             {/* Kembali ke Semua Poli Button */}
@@ -102,26 +99,35 @@ export function PoliDetailPage() {
             </Link>
           </div>
 
-          {/* Poli Title + Icon */}
+          {/* Poli Title + Icon + Status + Jam Praktek */}
           <div className="flex items-center gap-4">
             <div
               className="w-16 h-16 rounded-card flex items-center justify-center flex-shrink-0"
               style={{ backgroundColor: "var(--color-primary-light)" }}
             >
-              {getPoliIcon(poli.icon)}
+              {getPoliIcon(poli.nama_poli)}
             </div>
-            <div>
-              <h1 className="text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>
-                {poli.name}
-              </h1>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className="text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+                  {poli.nama_poli}
+                </h1>
+              </div>
               {poli.description && (
-                <p className="text-sm mt-2" style={{ color: "var(--color-text-secondary)" }}>
+                <p className="text-sm mb-2" style={{ color: "var(--color-text-secondary)" }}>
                   {poli.description}
                 </p>
               )}
-              <p className="text-sm mt-1" style={{ color: "var(--color-text-secondary)" }}>
-                {poli.doctors_today} dokter tersedia hari ini · {poli.quota_remaining} kuota tersisa
-              </p>
+              <div className="flex items-center gap-4 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+                <span className="flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  {poli.jumlah_dokter} dokter
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  {poli.jam_praktek}
+                </span>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -192,19 +198,24 @@ export function PoliDetailPage() {
   );
 }
 
-// Helper format date untuk API
+// Helper format date untuk API — pakai waktu lokal, BUKAN UTC
 function formatDate(date: Date): string {
-  return date.toISOString().split("T")[0];
+  return format(date, "yyyy-MM-dd");
 }
 
-function getPoliIcon(iconName: string): React.ReactNode {
-  const icons: Record<string, React.ReactNode> = {
-    baby: <Baby className="w-8 h-8" style={{ color: "var(--color-primary)" }} />,
-    heart: <Heart className="w-8 h-8" style={{ color: "var(--color-primary)" }} />,
-    eye: <Eye className="w-8 h-8" style={{ color: "var(--color-primary)" }} />,
-    stethoscope: <Stethoscope className="w-8 h-8" style={{ color: "var(--color-primary)" }} />,
-    tooth: <Activity className="w-8 h-8" style={{ color: "var(--color-primary)" }} />,
-    droplet: <Droplet className="w-8 h-8" style={{ color: "var(--color-primary)" }} />,
-  };
-  return icons[iconName] || <Stethoscope className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+function getPoliIcon(namaPoli: string): React.ReactNode {
+  const nama = namaPoli.toLowerCase();
+  if (nama.includes("anak")) return <Baby className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("bedah")) return <Heart className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("jantung") || nama.includes("kardiologi")) return <Heart className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("mata")) return <Eye className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("orthopedi") || nama.includes("orthopedy") || nama.includes("tulang")) return <Activity className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("paru")) return <Activity className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("interne") || nama.includes("penyakit dalam")) return <Stethoscope className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("syaraf") || nama.includes("saraf") || nama.includes("neurologi")) return <Brain className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("umum")) return <Stethoscope className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("gigi") || nama.includes("dental")) return <Heart className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("kulit") || nama.includes("dermatologi")) return <Droplet className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  if (nama.includes("orthopedi")) return <Activity className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
+  return <Stethoscope className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
 }

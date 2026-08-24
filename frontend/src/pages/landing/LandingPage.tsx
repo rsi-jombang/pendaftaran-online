@@ -5,7 +5,6 @@ import { Navbar } from "../../shared/components/layout/Navbar";
 import { Footer } from "../../shared/components/layout/Footer";
 import { Button } from "../../shared/components/ui/Button";
 import { Card } from "../../shared/components/ui/Card";
-import { Badge } from "../../shared/components/ui/Badge";
 import { Skeleton } from "../../shared/components/ui/Skeleton";
 import { usePoliList } from "../../features/poli/hooks";
 import {
@@ -22,15 +21,22 @@ import {
 
 const staggerDelay = 0.1; // 100ms
 
-// Icon mapping untuk poli
-const iconMap: Record<string, LucideIcon> = {
-  baby: Baby,
-  heart: Heart,
-  eye: Eye,
-  stethoscope: Stethoscope,
-  tooth: Heart, // fallback
-  droplet: Activity, // fallback
-};
+// Icon mapping untuk poli berdasarkan nama
+function getPoliIcon(namaPoli: string): LucideIcon {
+  const nama = namaPoli.toLowerCase();
+  if (nama.includes("anak")) return Baby;
+  if (nama.includes("bedah")) return Heart;
+  if (nama.includes("jantung") || nama.includes("kardiologi")) return Heart;
+  if (nama.includes("mata")) return Eye;
+  if (nama.includes("orthopedi") || nama.includes("orthopedy") || nama.includes("tulang")) return Activity;
+  if (nama.includes("paru")) return Activity;
+  if (nama.includes("interne") || nama.includes("penyakit dalam")) return Stethoscope;
+  if (nama.includes("syaraf") || nama.includes("saraf") || nama.includes("neurologi")) return Activity;
+  if (nama.includes("umum")) return Stethoscope;
+  if (nama.includes("gigi") || nama.includes("dental")) return Heart;
+  if (nama.includes("kulit") || nama.includes("dermatologi")) return Activity;
+  return Stethoscope;
+}
 
 const keunggulanData = [
   {
@@ -63,8 +69,8 @@ export function LandingPage() {
 
   const { data: poliData, isLoading: isPoliLoading } = usePoliList();
 
-  const handlePoliClick = (poliId: string) => {
-    window.location.href = `/poli/${poliId}`;
+  const handlePoliClick = (poliSlug: string) => {
+    window.location.href = `/poli/${poliSlug}`;
   };
 
   return (
@@ -199,7 +205,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Section Poli Tersedia */}
+      {/* Section Poli Buka Hari Ini */}
       <section ref={poliRef} className="py-20 px-6 lg:px-20">
         <div className="max-w-container mx-auto">
           <motion.div
@@ -209,10 +215,10 @@ export function LandingPage() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-semibold mb-4" style={{ color: "var(--color-text-primary)" }}>
-              Poli Tersedia
+              Poli Buka Hari Ini
             </h2>
             <p className="text-base max-w-2xl mx-auto" style={{ color: "var(--color-text-secondary)" }}>
-              Pilih poli sesuai kebutuhan kesehatan Anda
+              Poli yang tersedia untuk pendaftaran hari ini
             </p>
           </motion.div>
 
@@ -229,17 +235,17 @@ export function LandingPage() {
           {!isPoliLoading && poliData && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {poliData.data.slice(0, 6).map((poli, index) => {
-                const Icon = iconMap[poli.icon] || Stethoscope;
+                const Icon = getPoliIcon(poli.nama_poli) || Stethoscope;
                 return (
                   <motion.div
-                    key={poli.id}
+                    key={poli.slug_poli}
                     initial={{ opacity: 0, y: 20 }}
                     animate={isPoliInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
                     <Card
-                      variant={poli.quota_status === "full" ? "disabled" : "interactive"}
-                      onClick={() => handlePoliClick(poli.id)}
+                      variant="interactive"
+                      onClick={() => handlePoliClick(poli.slug_poli)}
                     >
                       <div className="flex items-start gap-4">
                         <div
@@ -250,16 +256,11 @@ export function LandingPage() {
                         </div>
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--color-text-primary)" }}>
-                            {poli.name}
+                            {poli.nama_poli}
                           </h3>
                           <p className="text-sm mb-3" style={{ color: "var(--color-text-secondary)" }}>
-                            {poli.doctors_today} dokter tersedia hari ini
+                            {poli.jumlah_dokter} dokter tersedia hari ini
                           </p>
-                          <Badge status={poli.quota_status === "available" ? "success" : "danger"}>
-                            {poli.quota_status === "available"
-                              ? `Kuota ${poli.quota_remaining}`
-                              : "Kuota Penuh"}
-                          </Badge>
                         </div>
                       </div>
                     </Card>

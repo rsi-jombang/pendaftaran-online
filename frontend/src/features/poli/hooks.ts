@@ -9,20 +9,20 @@ export function usePoliList() {
   });
 }
 
-export function usePoliDetail(poliId: string | null) {
+export function usePoliDetail(slugPoli: string | null) {
   return useQuery({
-    queryKey: ["poli", "detail", poliId],
-    queryFn: () => getPoliDetail(poliId!),
-    enabled: !!poliId,
+    queryKey: ["poli", "detail", slugPoli],
+    queryFn: () => getPoliDetail(slugPoli!),
+    enabled: !!slugPoli,
     staleTime: 5 * 60 * 1000,
   });
 }
 
-export function useDoctorSchedule(poliId: string | null, date: string | null) {
+export function useDoctorSchedule(slugPoli: string | null, date: string | null) {
   return useQuery({
-    queryKey: ["schedule", "doctors", poliId, date],
-    queryFn: () => getDoctorSchedule(poliId!, date!),
-    enabled: !!poliId && !!date,
+    queryKey: ["schedule", "doctors", slugPoli, date],
+    queryFn: () => getDoctorSchedule(slugPoli!, date!),
+    enabled: !!slugPoli && !!date,
     staleTime: 2 * 60 * 1000, // 2 menit - jadwal bisa berubah lebih sering
   });
 }
