@@ -4,14 +4,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { Badge } from "../../../shared/components/ui/Badge";
 import { Card } from "../../../shared/components/ui/Card";
 import { Input } from "../../../shared/components/ui/Input";
 import { Button } from "../../../shared/components/ui/Button";
 import { ErrorState } from "../../../shared/components/feedback/ErrorState";
 import { useSubmitRegistration } from "../../../features/registration/hooks";
 import { useRegistrationFlowStore } from "../../../shared/store/registrationFlowStore";
-import { User, Calendar, MapPin, CheckCircle2 } from "lucide-react";
+import { User, CreditCard, Phone, AlertCircle } from "lucide-react";
 
 const registrationSchema = z.object({
   patient_name: z.string().min(1, "Nama pasien wajib diisi"),
@@ -28,7 +27,8 @@ export type RegistrationFormData = z.infer<typeof registrationSchema>;
 
 export function RegistrationForm() {
   const navigate = useNavigate();
-  const { setRegistrationResult, clearPendingSelection, patient, pendingSelection } = useRegistrationFlowStore();
+  const { setRegistrationResult, clearPendingSelection, patient, pendingSelection } =
+    useRegistrationFlowStore();
 
   const isDisabled = !pendingSelection;
 
@@ -82,11 +82,9 @@ export function RegistrationForm() {
         arrival_method: data.arrival_method,
       });
     } catch (err: any) {
-      // Handle 422 validation errors from Laravel
       if (err.errors) {
         Object.entries(err.errors).forEach(([field, messages]) => {
           const message = Array.isArray(messages) ? messages[0] : messages;
-          // Map backend field names to form field names
           const fieldMap: Record<string, string> = {
             patient_id: "patient_name",
             poli_id: "patient_name",
@@ -102,7 +100,6 @@ export function RegistrationForm() {
           });
         });
       } else {
-        // Network error or 500 - will be caught by ErrorState
         throw err;
       }
     }
@@ -122,170 +119,180 @@ export function RegistrationForm() {
       clearPendingSelection();
       navigate(`/status/${result.registration_id}`);
     }
-  }, [submitMutation.isSuccess, submitMutation.data, setRegistrationResult, clearPendingSelection, navigate]);
+  }, [
+    submitMutation.isSuccess,
+    submitMutation.data,
+    setRegistrationResult,
+    clearPendingSelection,
+    navigate,
+  ]);
 
   // Show ErrorState for network/500 errors
-  const showErrorState = submitMutation.isError && !submitMutation.error?.message?.includes("validation");
+  const showErrorState =
+    submitMutation.isError && !submitMutation.error?.message?.includes("validation");
 
   return (
     <motion.div
       id="registration-form"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="mt-8"
+      transition={{ duration: 0.35, ease: "easeOut" }}
     >
-      {/* Summary Chip */}
-      {!isDisabled && pendingSelection && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 p-4 rounded-input"
-          style={{ backgroundColor: "var(--color-primary-light)", border: "1px solid var(--color-primary)" }}
-        >
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium" style={{ color: "var(--color-text-secondary)" }}>Ringkasan:</span>
-            <Badge status="info" className="px-3 py-1">
-              {pendingSelection.poliName}
-            </Badge>
-            <Badge status="info" className="px-3 py-1">
-              {pendingSelection.doctorName}
-            </Badge>
-            <Badge status="info" className="px-3 py-1">
-              {formatDateDisplay(pendingSelection.date)} · {pendingSelection.practiceHours}
-            </Badge>
-          </div>
-        </motion.div>
-      )}
-
       {/* Form Card */}
-      <Card variant="default" className="p-6">
-        <h3 className="text-xl font-semibold mb-6" style={{ color: "var(--color-text-primary)" }}>
-          Form Pendaftaran
-        </h3>
+      <Card variant="default" className="overflow-hidden p-0">
+        {/* Card header */}
+        <div className="border-b px-6 py-4" style={{ borderColor: "var(--c-border)" }}>
+          <h3 className="text-body font-semibold" style={{ color: "var(--c-text)" }}>
+            Data Pendaftaran
+          </h3>
+          <p className="mt-0.5 text-xs" style={{ color: "var(--c-text-muted)" }}>
+            Lengkapi form di bawah ini
+          </p>
+        </div>
 
         {isDisabled ? (
-          <div className="text-center py-8">
+          <div className="px-6 py-12 text-center">
             <div
-              className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "var(--color-primary-light)" }}
+              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
+              style={{ backgroundColor: "var(--c-primary-soft)" }}
             >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--color-primary)" }}>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
+              <AlertCircle className="h-8 w-8" style={{ color: "var(--c-primary)" }} />
             </div>
-            <h4 className="text-lg font-medium mb-2" style={{ color: "var(--color-text-primary)" }}>
+            <h4 className="mb-2 text-lg font-medium" style={{ color: "var(--c-text)" }}>
               Belum Ada Jadwal Terpilih
             </h4>
-            <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
+            <p className="text-sm" style={{ color: "var(--c-text-muted)" }}>
               Silakan pilih jadwal dokter di halaman Detail Poli terlebih dahulu
             </p>
-            <Button variant="secondary" size="md" className="mt-4" onClick={() => window.location.href = "/poli"}>
+            <Button
+              variant="secondary"
+              size="md"
+              className="mt-4"
+              onClick={() => navigate("/poli")}
+            >
               Pilih Poli
             </Button>
           </div>
         ) : (
-          <>
+          <div className="p-6">
             {showErrorState && (
               <ErrorState
-                message={submitMutation.error?.message || "Terjadi kesalahan jaringan. Silakan coba lagi."}
+                message={
+                  submitMutation.error?.message ||
+                  "Terjadi kesalahan jaringan. Silakan coba lagi."
+                }
                 onRetry={() => submitMutation.reset()}
                 retryLabel="Coba Lagi"
                 className="mb-6"
               />
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {/* Patient Data (Auto-filled, Read-only) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <Input
                   label="Nama Lengkap"
                   disabled
-                  leadingIcon={<User className="w-5 h-5" />}
+                  leadingIcon={<User className="h-4 w-4" />}
                   {...register("patient_name")}
                 />
                 <Input
                   label="NIK"
                   disabled
-                  leadingIcon={<Calendar className="w-5 h-5" />}
+                  leadingIcon={<CreditCard className="h-4 w-4" />}
                   {...register("patient_nik")}
                 />
                 <Input
                   label="Nomor HP"
                   disabled
                   type="tel"
-                  leadingIcon={<MapPin className="w-5 h-5" />}
+                  leadingIcon={<Phone className="h-4 w-4" />}
                   {...register("patient_phone")}
                 />
               </div>
 
               {/* Complaint */}
               <div>
-                <label className="block text-label mb-2 uppercase" style={{ color: "var(--color-text-primary)" }}>
-                  Keluhan / Catatan <span style={{ color: "var(--color-text-secondary)" }}> (opsional)</span>
+                <label
+                  className="mb-2 block text-label uppercase"
+                  style={{ color: "var(--c-text)" }}
+                >
+                  Keluhan / Catatan{" "}
+                  <span style={{ color: "var(--c-text-muted)" }}>(opsional)</span>
                 </label>
                 <textarea
                   {...register("complaint")}
                   rows={3}
-                  className="w-full px-4 py-3 bg-surface border-2 rounded-input text-body text-text-primary placeholder:text-text-secondary transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 resize-none"
+                  className="w-full resize-none rounded-input border-2 bg-surface px-4 py-3 text-body text-text-primary transition-all placeholder:text-text-secondary/70 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
                   placeholder="Tulis keluhan singkat atau catatan untuk dokter..."
                   style={{ fontFamily: "inherit" }}
                 />
                 {errors.complaint && (
-                  <p className="mt-2 text-sm" style={{ color: "var(--color-danger)" }}>
+                  <p className="mt-1.5 text-sm" style={{ color: "var(--c-danger)" }}>
                     {errors.complaint.message}
                   </p>
                 )}
-                <p className="mt-1 text-xs text-right" style={{ color: "var(--color-text-secondary)" }}>
+                <p className="mt-1 text-right text-xs" style={{ color: "var(--c-text-muted)" }}>
                   {watch("complaint")?.length || 0}/500 karakter
                 </p>
               </div>
 
               {/* Arrival Method */}
               <div>
-                <label className="block text-label mb-2 uppercase" style={{ color: "var(--color-text-primary)" }}>
+                <label
+                  className="mb-3 block text-label uppercase"
+                  style={{ color: "var(--c-text)" }}
+                >
                   Metode Kedatangan
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label
-                    className="flex items-center gap-2 p-4 border-2 rounded-input cursor-pointer transition-all"
+                    className="flex cursor-pointer items-center gap-3 rounded-input border-2 p-4 transition-all"
                     style={{
-                      borderColor: "var(--color-border)",
-                      backgroundColor: "var(--color-surface)",
+                      borderColor: "var(--c-border)",
+                      backgroundColor: "var(--c-surface)",
                     }}
                   >
                     <input
                       type="radio"
                       value="datang_langsung"
                       {...register("arrival_method")}
-                      className="w-4 h-4 accent-primary"
+                      className="h-4 w-4 accent-[var(--c-primary)]"
                     />
                     <div>
-                      <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>Datang Langsung</span>
-                      <p className="text-xs mt-1" style={{ color: "var(--color-text-secondary)" }}>Kunjungi rumah sakit sendiri</p>
+                      <span className="text-small font-medium" style={{ color: "var(--c-text)" }}>
+                        Datang Langsung
+                      </span>
+                      <p className="mt-0.5 text-xs" style={{ color: "var(--c-text-muted)" }}>
+                        Kunjungi rumah sakit sendiri
+                      </p>
                     </div>
                   </label>
                   <label
-                    className="flex items-center gap-2 p-4 border-2 rounded-input cursor-pointer transition-all"
+                    className="flex cursor-pointer items-center gap-3 rounded-input border-2 p-4 transition-all"
                     style={{
-                      borderColor: "var(--color-border)",
-                      backgroundColor: "var(--color-surface)",
+                      borderColor: "var(--c-border)",
+                      backgroundColor: "var(--c-surface)",
                     }}
                   >
                     <input
                       type="radio"
                       value="di_jemput"
                       {...register("arrival_method")}
-                      className="w-4 h-4 accent-primary"
+                      className="h-4 w-4 accent-[var(--c-primary)]"
                     />
                     <div>
-                      <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>Dijemput</span>
-                      <p className="text-xs mt-1" style={{ color: "var(--color-text-secondary)" }}>Butuh jemputan ambulans/transport</p>
+                      <span className="text-small font-medium" style={{ color: "var(--c-text)" }}>
+                        Dijemput
+                      </span>
+                      <p className="mt-0.5 text-xs" style={{ color: "var(--c-text-muted)" }}>
+                        Butuh jemputan ambulans/transport
+                      </p>
                     </div>
                   </label>
                 </div>
                 {errors.arrival_method && (
-                  <p className="mt-2 text-sm" style={{ color: "var(--color-danger)" }}>
+                  <p className="mt-2 text-sm" style={{ color: "var(--c-danger)" }}>
                     {errors.arrival_method.message}
                   </p>
                 )}
@@ -293,20 +300,20 @@ export function RegistrationForm() {
 
               {/* Consent Checkbox */}
               <div className="pt-2">
-                <label className="flex items-start gap-3 cursor-pointer">
+                <label className="flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
                     {...register("consent")}
-                    className="w-5 h-5 mt-0.5 accent-primary rounded border-2"
-                    style={{ borderColor: "var(--color-border)" }}
+                    className="mt-0.5 h-5 w-5 rounded border-2 accent-[var(--c-primary)]"
+                    style={{ borderColor: "var(--c-border)" }}
                   />
-                  <div className="text-sm" style={{ color: "var(--color-text-primary)", lineHeight: 1.5 }}>
-                    Saya menyetujui pengumpulan dan pengolahan data pribadi saya sesuai dengan
-                    <span className="underline hover:no-underline" style={{ color: "var(--color-primary)" }}>
+                  <div className="text-sm leading-relaxed" style={{ color: "var(--c-text)" }}>
+                    Saya menyetujui pengumpulan dan pengolahan data pribadi saya sesuai dengan{" "}
+                    <span className="font-medium underline hover:no-underline" style={{ color: "var(--c-primary)" }}>
                       Kebijakan Privasi
-                    </span>
-                    dan
-                    <span className="underline hover:no-underline" style={{ color: "var(--color-primary)" }}>
+                    </span>{" "}
+                    dan{" "}
+                    <span className="font-medium underline hover:no-underline" style={{ color: "var(--c-primary)" }}>
                       Syarat & Ketentuan
                     </span>
                     .
@@ -316,44 +323,33 @@ export function RegistrationForm() {
                   <motion.p
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-2 text-sm flex items-center gap-1"
-                    style={{ color: "var(--color-danger)" }}
+                    className="mt-2 flex items-center gap-1 text-sm"
+                    style={{ color: "var(--c-danger)" }}
                   >
-                    <CheckCircle2 className="w-4 h-4" />
+                    <AlertCircle className="h-4 w-4" />
                     {errors.consent.message}
                   </motion.p>
                 )}
               </div>
 
-              {/* Submit Button - sticky on mobile */}
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                fullWidth
-                loading={submitMutation.isPending}
-                disabled={!isFormValid || submitMutation.isPending}
-                className="sticky bottom-0 md:static"
-                style={{
-                  zIndex: 10,
-                  marginTop: "auto",
-                }}
-              >
-                Konfirmasi Pendaftaran
-              </Button>
+              {/* Submit Button */}
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  variant="gradient"
+                  size="lg"
+                  fullWidth
+                  loading={submitMutation.isPending}
+                  disabled={!isFormValid || submitMutation.isPending}
+                  className="sticky bottom-4 md:static"
+                >
+                  Konfirmasi Pendaftaran
+                </Button>
+              </div>
             </form>
-          </>
+          </div>
         )}
       </Card>
     </motion.div>
   );
-}
-
-function formatDateDisplay(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
 }

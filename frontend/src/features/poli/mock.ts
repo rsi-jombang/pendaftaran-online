@@ -223,7 +223,7 @@ const generateDoctorSchedule = (poliId: string, date: string) => {
   const doctor = {
     id: "DOK-01",
     name: "dr. Dokter Utama",
-    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=dokter",
+    avatar_url: "/doctor-male.png",
     practice_hours: "08:00-12:00",
     quota_remaining: 10,
     quota_status: "available" as const,

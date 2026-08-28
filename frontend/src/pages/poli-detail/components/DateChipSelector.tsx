@@ -1,80 +1,104 @@
 import { format } from "date-fns";
+import { id as localeId } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { useMemo } from "react";
-
-const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-const monthNames = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-];
 
 interface DateChipProps {
   date: Date;
   isSelected: boolean;
+  isToday: boolean;
   onClick: () => void;
 }
 
-function DateChip({ date, isSelected, onClick }: DateChipProps) {
-  const dayName = dayNames[date.getDay()];
-  const dayNumber = date.getDate();
-  const monthName = monthNames[date.getMonth()];
-
+function DateChip({ date, isSelected, isToday, onClick }: DateChipProps) {
   return (
     <motion.button
+      whileTap={{ scale: 0.95 }}
+      whileHover={isSelected ? {} : { scale: 1.04 }}
       onClick={onClick}
-      whileHover={{ scale: isSelected ? 1 : 1.03 }}
-      whileTap={{ scale: 0.97 }}
-      className="flex flex-col items-center gap-1 px-4 py-3 rounded-input min-w-[80px] transition-all duration-150"
+      className={`relative flex shrink-0 flex-col items-center gap-0.5 rounded-input px-4 py-3 min-w-[76px] transition-colors duration-150 ${
+        isSelected ? "text-white" : ""
+      }`}
       style={{
-        backgroundColor: isSelected ? "var(--color-primary)" : "var(--color-surface)",
-        color: isSelected ? "var(--color-surface)" : "var(--color-text-primary)",
-        border: isSelected ? "none" : "2px solid var(--color-border)",
-        boxShadow: isSelected ? "0 4px 12px rgba(15, 155, 142, 0.3)" : "none",
+        backgroundColor: isSelected ? "var(--color-primary)" : "var(--c-surface)",
+        color: isSelected ? "#ffffff" : "var(--c-text)",
+        border: isSelected ? "none" : "2px solid var(--c-line)",
+        boxShadow: isSelected ? "var(--shadow-soft)" : "none",
       }}
     >
-      <span className="text-sm font-medium">{dayName}</span>
-      <span className="text-lg font-bold">{dayNumber}</span>
-      <span className="text-xs opacity-80">{monthName.slice(0, 3)}</span>
+      <span className="text-xs font-medium uppercase tracking-wide opacity-80">
+        {format(date, "EEE", { locale: localeId })}
+      </span>
+      <span className="text-xl font-bold leading-none">{date.getDate()}</span>
+      <span className="text-[11px] opacity-75">
+        {format(date, "MMM", { locale: localeId })}
+      </span>
+
+      {/* Dot penanda hari ini */}
+      {isToday && (
+        <span
+          className="absolute bottom-1.5 h-1 w-1 rounded-full"
+          style={{
+            backgroundColor: isSelected ? "#ffffff" : "var(--color-accent)",
+          }}
+        />
+      )}
     </motion.button>
   );
+}
+
+interface DateChipSelectorProps {
+  selectedDate: Date;
+  onDateChange: (date: Date) => void;
 }
 
 export function DateChipSelector({
   selectedDate,
   onDateChange,
-}: {
-  selectedDate: Date;
-  onDateChange: (date: Date) => void;
-}) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+}: DateChipSelectorProps) {
+  const today = useMemo(() => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    return t;
+  }, []);
 
-  // Generate 7 days starting from today
+  // Generate 7 hari ke depan mulai hari ini
   const dates = useMemo(() => {
-    const arr = [];
-    for (let i = 0; i < 7; i++) {
+    return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
-      arr.push(d);
-    }
-    return arr;
+      return d;
+    });
   }, [today]);
 
+  const sameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>
-        Pilih Tanggal
-      </h3>
-      <div className="flex gap-3 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+    <div className="relative">
+      <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-3 -mx-6 px-6">
         {dates.map((date) => (
           <DateChip
             key={date.toISOString()}
             date={date}
-            isSelected={format(date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd")}
+            isToday={sameDay(date, today)}
+            isSelected={sameDay(date, selectedDate)}
             onClick={() => onDateChange(date)}
           />
         ))}
       </div>
+
+      {/* Fade edges */}
+      <div
+        className="pointer-events-none absolute inset-y-0 left-0 w-10"
+        style={{ background: "linear-gradient(to right, var(--c-bg), transparent)" }}
+      />
+      <div
+        className="pointer-events-none absolute inset-y-0 right-0 w-10"
+        style={{ background: "linear-gradient(to left, var(--c-bg), transparent)" }}
+      />
     </div>
   );
 }

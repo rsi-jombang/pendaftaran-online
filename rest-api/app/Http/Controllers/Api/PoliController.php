@@ -232,10 +232,9 @@ class PoliController extends BaseController
                 $status = 'BELUM BUKA';
             }
 
-            // Generate avatar URL with gender
-            $gender = $doc->jk == 1 ? 'female' : 'male';
-            $avatarSeed = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $doc->name));
-            $avatarUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed={$avatarSeed}&gender={$gender}";
+            // Avatar lokal berdasarkan jenis kelamin (jk: 0=laki-laki, 1=perempuan)
+            $gender = ($doc->jk == 1) ? 'female' : 'male';
+            $avatarUrl = "/doctor-{$gender}.png";
 
             return [
                 'id' => (int) $doc->id,

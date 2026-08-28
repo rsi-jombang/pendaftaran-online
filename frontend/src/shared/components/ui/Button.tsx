@@ -1,8 +1,8 @@
+import { motion, type HTMLMotionProps } from "framer-motion";
 import { type ReactNode } from "react";
-import { motion } from "framer-motion";
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "accent" | "ghost";
+export interface ButtonProps extends HTMLMotionProps<"button"> {
+  variant?: "primary" | "secondary" | "accent" | "ghost" | "gradient";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
   fullWidth?: boolean;
@@ -19,65 +19,39 @@ export function Button({
   children,
   disabled,
   className = "",
-  ...props
+  ...rest
 }: ButtonProps) {
-  const baseStyles = "inline-flex items-center justify-center gap-2 font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
-  
-  const variantStyles: Record<string, { className: string; style: React.CSSProperties }> = {
-    primary: {
-      className: "text-white",
-      style: {
-        backgroundColor: "var(--color-primary)",
-        borderRadius: "var(--radius-input)",
-      },
-    },
-    secondary: {
-      className: "bg-transparent text-white",
-      style: {
-        border: "2px solid var(--color-primary)",
-        color: "var(--color-primary)",
-        borderRadius: "var(--radius-input)",
-      },
-    },
-    accent: {
-      className: "text-white",
-      style: {
-        backgroundColor: "var(--color-accent)",
-        borderRadius: "var(--radius-input)",
-      },
-    },
-    ghost: {
-      className: "",
-      style: {
-        color: "var(--color-primary)",
-        backgroundColor: "transparent",
-        borderRadius: "var(--radius-input)",
-      },
-    },
+  const base =
+    "inline-flex items-center justify-center gap-2 rounded-input font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-50 disabled:pointer-events-none";
+
+  const variants: Record<string, string> = {
+    primary: "bg-primary text-white hover:bg-primary-dark",
+    secondary:
+      "border-2 border-primary text-primary hover:bg-primary hover:text-white",
+    accent: "bg-accent text-white hover:brightness-110 active:scale-[0.98]",
+    ghost: "text-primary hover:bg-primary/10",
+    gradient: "bg-gradient-primary text-white shadow-soft hover:brightness-110",
   };
 
-  const sizeStyles = {
-    sm: "px-3 py-2 text-sm",
-    md: "px-4 py-3 text-base",
-    lg: "px-6 py-4 text-lg",
+  const sizes: Record<string, string> = {
+    sm: "min-h-[40px] px-4 py-2 text-small",
+    md: "min-h-[44px] px-5 py-2.5 text-body",
+    lg: "min-h-[48px] px-7 py-3 text-h3",
   };
 
   const widthStyle = fullWidth ? "w-full" : "";
-  const variantConfig = variantStyles[variant];
 
   return (
     <motion.button
-      whileHover={{ scale: disabled || loading ? 1 : 1.02 }}
-      whileTap={{ scale: disabled || loading ? 1 : 0.97 }}
-      className={`${baseStyles} ${variantConfig.className} ${sizeStyles[size]} ${widthStyle} ${className}`}
-      style={variantConfig.style}
+      whileHover={disabled || loading ? {} : { scale: 1.02 }}
+      whileTap={disabled || loading ? {} : { scale: 0.97 }}
+      className={`${base} ${variants[variant]} ${sizes[size]} ${widthStyle} ${className}`}
       disabled={disabled || loading}
-      type={props.type || "button"}
-      onClick={props.onClick}
+      {...rest}
     >
       {loading && (
         <svg
-          className="animate-spin h-4 w-4"
+          className="h-4 w-4 animate-spin"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -97,7 +71,7 @@ export function Button({
           />
         </svg>
       )}
-      {!loading && icon && <span>{icon}</span>}
+      {!loading && icon && <span className="inline-flex">{icon}</span>}
       <span>{children}</span>
     </motion.button>
   );

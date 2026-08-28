@@ -8,7 +8,7 @@ export const generateMockSchedule = (poliId: string, poliName: string, date: str
     {
       id: "DOK-01",
       name: "dr. Sarah Wijaya, Sp.A",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
+      avatar_url: "/doctor-female.png",
       practice_hours: "09:00-12:00",
       quota_remaining: 5,
       quota_status: "available" as const,
@@ -17,7 +17,7 @@ export const generateMockSchedule = (poliId: string, poliName: string, date: str
     {
       id: "DOK-02",
       name: "dr. Andi Prasetyo, Sp.A",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=andi",
+      avatar_url: "/doctor-male.png",
       practice_hours: "13:00-16:00",
       quota_remaining: 0,
       quota_status: "full" as const,
@@ -26,7 +26,7 @@ export const generateMockSchedule = (poliId: string, poliName: string, date: str
     {
       id: "DOK-03",
       name: "dr. Maya Sari, Sp.PD",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=maya",
+      avatar_url: "/doctor-female.png",
       practice_hours: "08:00-11:00",
       quota_remaining: 8,
       quota_status: "available" as const,
@@ -35,7 +35,7 @@ export const generateMockSchedule = (poliId: string, poliName: string, date: str
     {
       id: "DOK-04",
       name: "dr. Budi Santoso, Sp.M",
-      avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=budi",
+      avatar_url: "/doctor-male.png",
       practice_hours: "14:00-17:00",
       quota_remaining: 3,
       quota_status: "available" as const,

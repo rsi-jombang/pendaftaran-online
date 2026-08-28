@@ -58,11 +58,11 @@ export function NewPatientForm({ nik, onSubmit, isLoading = false, error, onCanc
       {/* Info Header */}
       <div
         className="flex flex-col items-center gap-4 p-6 rounded-card"
-        style={{ backgroundColor: "rgba(245, 166, 35, 0.1)" }}
+        style={{ backgroundColor: "color-mix(in srgb, var(--color-warning) 10%, transparent)" }}
       >
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "rgba(245, 166, 35, 0.2)" }}
+          style={{ backgroundColor: "color-mix(in srgb, var(--color-warning) 20%, transparent)" }}
         >
           <svg
             className="w-8 h-8"
@@ -179,7 +179,7 @@ export function NewPatientForm({ nik, onSubmit, isLoading = false, error, onCanc
         {error && (
           <div
             className="p-3 rounded-input text-sm text-center"
-            style={{ backgroundColor: "rgba(229, 72, 77, 0.1)", color: "var(--color-danger)" }}
+            style={{ backgroundColor: "color-mix(in srgb, var(--color-danger) 10%, transparent)", color: "var(--color-danger)" }}
             role="alert"
           >
             {error}

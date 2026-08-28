@@ -1,7 +1,18 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { Button } from "../ui/Button";
+import { ThemeToggle } from "./ThemeToggle";
 import { motion } from "framer-motion";
+
+const NAV_ITEMS = [
+  { label: "Beranda", to: "/" },
+  { label: "Layanan", to: "/#layanan" },
+  { label: "Jadwal Dokter", to: "/poli" },
+  { label: "Kontak", to: "/#kontak" },
+];
+
+const linkBase =
+  "relative text-body text-text-secondary hover:text-primary transition-colors after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:bg-primary after:transition-all after:duration-200";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -30,7 +41,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shadow-soft">
               <span className="text-white font-bold text-h3">RS</span>
             </div>
             <span className="text-h3 text-text-primary font-semibold hidden sm:block">
@@ -40,38 +51,37 @@ export function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
-            <Link
-              to="/"
-              className="text-body text-text-secondary hover:text-primary transition-colors"
-            >
-              Beranda
-            </Link>
-            <Link
-              to="/#layanan"
-              className="text-body text-text-secondary hover:text-primary transition-colors"
-            >
-              Layanan
-            </Link>
-            <Link
-              to="/#jadwal"
-              className="text-body text-text-secondary hover:text-primary transition-colors"
-            >
-              Jadwal Dokter
-            </Link>
-            <Link
-              to="/#kontak"
-              className="text-body text-text-secondary hover:text-primary transition-colors"
-            >
-              Kontak
-            </Link>
+            {NAV_ITEMS.map((item) =>
+              item.to === "/" ? (
+                <NavLink
+                  key={item.label}
+                  to={item.to}
+                  end
+                  className={({ isActive }) =>
+                    `${linkBase} ${isActive ? "text-primary after:w-full" : "after:w-0"}`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ) : (
+                <Link key={item.label} to={item.to} className={`${linkBase} after:w-0`}>
+                  {item.label}
+                </Link>
+              )
+            )}
           </div>
 
-          {/* CTA Button */}
-          <Link to="/cek-nik">
-            <Button variant="accent" size="md">
-              Daftar Poli Sekarang
-            </Button>
-          </Link>
+          {/* Right cluster */}
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+
+            {/* CTA Button */}
+            <Link to="/cek-nik">
+              <Button variant="accent" size="md">
+                Daftar Poli Sekarang
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </motion.nav>

@@ -18,82 +18,150 @@ export function PatientSummaryCard({ data }: PatientSummaryCardProps) {
   };
 
   return (
-    <Card variant="default" className="p-6">
-      <h3 className="text-lg font-semibold mb-6" style={{ color: "var(--color-text-primary)" }}>
-        Detail Pendaftaran
-      </h3>
+    <Card variant="default" className="overflow-hidden p-0">
+      {/* Card header */}
+      <div className="border-b px-6 py-4" style={{ borderColor: "var(--c-border)" }}>
+        <h3 className="text-body font-semibold" style={{ color: "var(--c-text)" }}>
+          Detail Pendaftaran
+        </h3>
+      </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 p-6">
         {/* Patient Name */}
-        <div className="flex items-center gap-4 p-4 rounded-input" style={{ backgroundColor: "var(--color-bg-base)" }}>
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--color-primary-light)" }}>
-            <User className="w-6 h-6" style={{ color: "var(--color-primary)" }} />
+        <div
+          className="flex items-center gap-4 rounded-input p-4"
+          style={{ backgroundColor: "var(--c-bg)" }}
+        >
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: "var(--c-primary-soft)" }}
+          >
+            <User className="h-5 w-5" style={{ color: "var(--c-primary)" }} />
           </div>
-          <div>
-            <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>Nama Pasien</p>
-            <p className="text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>{data.patient.name}</p>
+          <div className="min-w-0">
+            <p className="text-xs" style={{ color: "var(--c-text-muted)" }}>
+              Nama Pasien
+            </p>
+            <p className="truncate text-body font-semibold" style={{ color: "var(--c-text)" }}>
+              {data.patient.name}
+            </p>
           </div>
         </div>
 
         {/* NIK Masked */}
-        <div className="flex items-center gap-4 p-4 rounded-input" style={{ backgroundColor: "var(--color-bg-base)" }}>
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--color-primary-light)" }}>
-            <Calendar className="w-6 h-6" style={{ color: "var(--color-primary)" }} />
+        <div
+          className="flex items-center gap-4 rounded-input p-4"
+          style={{ backgroundColor: "var(--c-bg)" }}
+        >
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: "var(--c-primary-soft)" }}
+          >
+            <Calendar className="h-5 w-5" style={{ color: "var(--c-primary)" }} />
           </div>
-          <div>
-            <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>NIK</p>
-            <p className="text-lg font-mono" style={{ color: "var(--color-text-primary)", fontFamily: "'Space Grotesk', monospace" }}>
+          <div className="min-w-0">
+            <p className="text-xs" style={{ color: "var(--c-text-muted)" }}>
+              NIK
+            </p>
+            <p
+              className="text-body font-mono"
+              style={{ color: "var(--c-text)", fontFamily: "'Space Grotesk', monospace" }}
+            >
               {data.patient.nik_masked}
             </p>
           </div>
         </div>
 
         {/* Poli */}
-        <div className="flex items-center gap-4 p-4 rounded-input" style={{ backgroundColor: "var(--color-bg-base)" }}>
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--color-primary-light)" }}>
-            <Stethoscope className="w-6 h-6" style={{ color: "var(--color-primary)" }} />
+        <div
+          className="flex items-center gap-4 rounded-input p-4"
+          style={{ backgroundColor: "var(--c-bg)" }}
+        >
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: "var(--c-primary-soft)" }}
+          >
+            <Stethoscope className="h-5 w-5" style={{ color: "var(--c-primary)" }} />
           </div>
-          <div>
-            <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>Poli</p>
-            <p className="text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>{data.poli.name}</p>
+          <div className="min-w-0">
+            <p className="text-xs" style={{ color: "var(--c-text-muted)" }}>
+              Poli
+            </p>
+            <p className="truncate text-body font-semibold" style={{ color: "var(--c-text)" }}>
+              {data.poli.name}
+            </p>
           </div>
         </div>
 
         {/* Doctor */}
-        <div className="flex items-center gap-4 p-4 rounded-input" style={{ backgroundColor: "var(--color-bg-base)" }}>
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--color-primary-light)" }}>
-            <User className="w-6 h-6" style={{ color: "var(--color-primary)" }} />
+        <div
+          className="flex items-center gap-4 rounded-input p-4"
+          style={{ backgroundColor: "var(--c-bg)" }}
+        >
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: "var(--c-primary-soft)" }}
+          >
+            <User className="h-5 w-5" style={{ color: "var(--c-primary)" }} />
           </div>
-          <div>
-            <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>Dokter</p>
-            <p className="text-lg font-semibold" style={{ color: "var(--color-text-primary)" }}>{data.doctor.name}</p>
+          <div className="min-w-0">
+            <p className="text-xs" style={{ color: "var(--c-text-muted)" }}>
+              Dokter
+            </p>
+            <p className="truncate text-body font-semibold" style={{ color: "var(--c-text)" }}>
+              {data.doctor.name}
+            </p>
           </div>
         </div>
 
         {/* Schedule & Queue Info */}
-        <div className="grid grid-cols-2 gap-4 pt-2">
-          <div className="flex items-center gap-3 p-4 rounded-input" style={{ backgroundColor: "var(--color-bg-base)" }}>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--color-primary-light)" }}>
-              <Calendar className="w-5 h-5" style={{ color: "var(--color-primary)" }} />
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <div
+            className="flex items-center gap-3 rounded-input p-4"
+            style={{ backgroundColor: "var(--c-bg)" }}
+          >
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: "var(--c-primary-soft)" }}
+            >
+              <Calendar className="h-4 w-4" style={{ color: "var(--c-primary)" }} />
             </div>
-            <div>
-              <p className="text-xs" style={{ color: "var(--color-text-secondary)" }}>Tanggal & Jam</p>
-              <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>
+            <div className="min-w-0">
+              <p className="text-[11px]" style={{ color: "var(--c-text-muted)" }}>
+                Tanggal & Jam
+              </p>
+              <p className="text-small font-medium" style={{ color: "var(--c-text)" }}>
                 {formatDate(data.schedule.date)}
               </p>
-              <p className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
+              <p className="text-[11px]" style={{ color: "var(--c-text-muted)" }}>
                 {data.schedule.practice_hours}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 rounded-input" style={{ backgroundColor: "var(--color-bg-base)" }}>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--color-warning/20)" }}>
-              <Users className="w-5 h-5" style={{ color: "var(--color-warning)" }} />
+          <div
+            className="flex items-center gap-3 rounded-input p-4"
+            style={{ backgroundColor: "var(--c-bg)" }}
+          >
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--c-warning) 15%, transparent)",
+              }}
+            >
+              <Users className="h-4 w-4" style={{ color: "var(--c-warning)" }} />
             </div>
-            <div>
-              <p className="text-xs" style={{ color: "var(--color-text-secondary)" }}>Antrian di Depan</p>
-              <p className="text-2xl font-bold" style={{ color: "var(--color-warning)", fontFamily: "'Space Grotesk', monospace" }}>
+            <div className="min-w-0">
+              <p className="text-[11px]" style={{ color: "var(--c-text-muted)" }}>
+                Antrian di Depan
+              </p>
+              <p
+                className="text-xl font-bold"
+                style={{
+                  color: "var(--c-warning)",
+                  fontFamily: "'Space Grotesk', monospace",
+                }}
+              >
                 {data.queue_position}
               </p>
             </div>
@@ -102,13 +170,32 @@ export function PatientSummaryCard({ data }: PatientSummaryCardProps) {
 
         {/* Estimated Wait Time */}
         {data.estimated_wait_minutes > 0 && data.status === "waiting" && (
-          <div className="flex items-center gap-3 p-4 rounded-input" style={{ backgroundColor: "rgba(245, 166, 35, 0.1)", border: "1px solid rgba(245, 166, 35, 0.2)" }}>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(245, 166, 35, 0.2)" }}>
-              <Clock className="w-5 h-5" style={{ color: "var(--color-warning)" }} />
+          <div
+            className="flex items-center gap-3 rounded-input p-4"
+            style={{
+              backgroundColor: "color-mix(in srgb, var(--c-warning) 8%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--c-warning) 18%, transparent)",
+            }}
+          >
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--c-warning) 15%, transparent)",
+              }}
+            >
+              <Clock className="h-4 w-4" style={{ color: "var(--c-warning)" }} />
             </div>
             <div>
-              <p className="text-xs" style={{ color: "var(--color-warning)" }}>Estimasi Waktu Tunggu</p>
-              <p className="text-xl font-bold" style={{ color: "var(--color-warning)", fontFamily: "'Space Grotesk', monospace" }}>
+              <p className="text-[11px] font-medium" style={{ color: "var(--c-warning)" }}>
+                Estimasi Waktu Tunggu
+              </p>
+              <p
+                className="text-xl font-bold"
+                style={{
+                  color: "var(--c-warning)",
+                  fontFamily: "'Space Grotesk', monospace",
+                }}
+              >
                 {data.estimated_wait_minutes} menit
               </p>
             </div>

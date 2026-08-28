@@ -19,14 +19,14 @@ export function PatientFoundCard({ patient, onContinue }: PatientFoundCardProps)
     >
       <div
         className="flex flex-col items-center gap-4 p-6 rounded-card"
-        style={{ backgroundColor: "rgba(34, 163, 102, 0.1)" }}
+        style={{ backgroundColor: "color-mix(in srgb, var(--color-success) 10%, transparent)" }}
       >
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
           className="w-16 h-16 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "rgba(34, 163, 102, 0.2)" }}
+          style={{ backgroundColor: "color-mix(in srgb, var(--color-success) 20%, transparent)" }}
         >
           <Check className="w-8 h-8" style={{ color: "var(--color-success)" }} strokeWidth={3} />
         </motion.div>

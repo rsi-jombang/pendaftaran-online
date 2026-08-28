@@ -2,13 +2,20 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ChevronLeft, Baby, Heart, Eye, Stethoscope, Droplet, Activity, Brain, Users, Clock } from "lucide-react";
-import { Button, Skeleton } from "../../shared/components/ui";
+import {
+  ChevronLeft,
+  Users,
+  Clock,
+} from "lucide-react";
+import { Skeleton } from "../../shared/components/ui";
+import { PoliIcon } from "../../shared/components/ui/PoliIcon";
+import { EmptyState } from "../../shared/components/feedback";
 import { DateChipSelector } from "./components/DateChipSelector";
 import { DoctorCard } from "./components/DoctorCard";
 import { usePoliDetail, useDoctorSchedule } from "../../features/poli";
 import { useRegistrationFlowStore } from "../../shared/store/registrationFlowStore";
 import type { Doctor } from "../../features/schedule/types";
+import { getPoliGradient } from "../../shared/utils/poliGradient";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -29,7 +36,10 @@ export function PoliDetailPage() {
   });
 
   // Fetch jadwal dokter berdasarkan tanggal
-  const { data: scheduleData, isLoading } = useDoctorSchedule(slugPoli, formatDate(selectedDate));
+  const { data: scheduleData, isLoading } = useDoctorSchedule(
+    slugPoli,
+    formatDate(selectedDate)
+  );
 
   const handleDoctorSelect = (doctor: Doctor) => {
     const poli = poliData?.data;
@@ -49,10 +59,13 @@ export function PoliDetailPage() {
   // Loading poli detail
   if (isPoliLoading) {
     return (
-      <div className="min-h-screen py-12 px-6" style={{ backgroundColor: "var(--color-bg-base)" }}>
-        <div className="max-w-container mx-auto">
+      <div
+        className="min-h-screen px-6 py-12"
+        style={{ backgroundColor: "var(--c-bg)" }}
+      >
+        <div className="mx-auto max-w-container">
           <div className="space-y-6">
-            <Skeleton variant="card" height={200} />
+            <Skeleton variant="card" height={220} />
             <Skeleton variant="card" height={150} />
           </div>
         </div>
@@ -63,71 +76,111 @@ export function PoliDetailPage() {
   const poli = poliData?.data;
   if (!poli) {
     return (
-      <div className="min-h-screen py-12 px-6" style={{ backgroundColor: "var(--color-bg-base)" }}>
-        <div className="max-w-container mx-auto text-center py-12">
-          <p style={{ color: "var(--color-text-secondary)" }}>Poli tidak ditemukan</p>
+      <div
+        className="min-h-screen px-6 py-12"
+        style={{ backgroundColor: "var(--c-bg)" }}
+      >
+        <div className="max-w-container mx-auto py-12 text-center">
+          <p style={{ color: "var(--c-text-muted)" }}>Poli tidak ditemukan</p>
         </div>
       </div>
     );
   }
 
+  const [gradFrom, gradTo] = getPoliGradient(poli.nama_poli);
+  const doctors = scheduleData?.data.doctors ?? [];
+
+  const pill = "px-3 py-1.5 rounded-full text-small transition-colors";
+
   return (
-    <div className="min-h-screen py-12 px-6" style={{ backgroundColor: "var(--color-bg-base)" }}>
-      <div className="max-w-container mx-auto">
-        {/* Header Detail Poli */}
+    <div
+      className="min-h-screen px-6 py-12"
+      style={{ backgroundColor: "var(--c-bg)" }}
+    >
+      <div className="mx-auto max-w-container">
+        {/* ============================================================
+            Banner Detail Poli (gradient penuh)
+           ============================================================ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mb-8"
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="relative mb-10 overflow-hidden rounded-card"
+          style={{ background: `linear-gradient(135deg, ${gradFrom}, ${gradTo})` }}
         >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-              <Link to="/" className="hover:underline">Beranda</Link>
-              <span>/</span>
-              <Link to="/poli" className="hover:underline">Semua Poli</Link>
-              <span>/</span>
-              <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>{poli.nama_poli}</span>
-            </nav>
+          {/* Decorative circles */}
+          <div
+            className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.08)" }}
+          />
+          <div
+            className="pointer-events-none absolute -bottom-24 right-40 h-52 w-52 rounded-full"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.06)" }}
+          />
 
-            {/* Kembali ke Semua Poli Button */}
-            <Link to="/poli">
-              <Button variant="ghost" size="sm" icon={<ChevronLeft className="w-4 h-4" />}>
-                Kembali ke Semua Poli
-              </Button>
-            </Link>
-          </div>
-
-          {/* Poli Title + Icon + Status + Jam Praktek */}
-          <div className="flex items-center gap-4">
-            <div
-              className="w-16 h-16 rounded-card flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: "var(--color-primary-light)" }}
-            >
-              {getPoliIcon(poli.nama_poli)}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h1 className="text-3xl font-bold" style={{ color: "var(--color-text-primary)" }}>
+          <div className="relative p-6 md:p-8">
+            {/* Top row: breadcrumb pills + tombol kembali */}
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+              <nav className="flex flex-wrap items-center gap-1.5 text-small">
+                <Link
+                  to="/"
+                  className={`${pill} bg-white/15 text-white/90 hover:bg-white/25`}
+                >
+                  Beranda
+                </Link>
+                <span className="text-white/50">/</span>
+                <Link
+                  to="/poli"
+                  className={`${pill} bg-white/15 text-white/90 hover:bg-white/25`}
+                >
+                  Semua Poli
+                </Link>
+                <span className="text-white/50">/</span>
+                <span className={`${pill} bg-white/25 font-medium text-white`}>
                   {poli.nama_poli}
-                </h1>
-              </div>
-              {poli.description && (
-                <p className="text-sm mb-2" style={{ color: "var(--color-text-secondary)" }}>
-                  {poli.description}
-                </p>
-              )}
-              <div className="flex items-center gap-4 text-sm" style={{ color: "var(--color-text-secondary)" }}>
-                <span className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  {poli.jumlah_dokter} dokter
                 </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {poli.jam_praktek}
-                </span>
+              </nav>
+
+              <Link
+                to="/poli"
+                className={`${pill} inline-flex items-center gap-1 bg-white/15 text-white hover:bg-white/25`}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Kembali
+              </Link>
+            </div>
+
+            {/* Title row */}
+            <div className="flex items-center gap-5">
+              <div
+                className="flex h-20 w-20 shrink-0 items-center justify-center rounded-card"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.18)",
+                  backdropFilter: "blur(4px)",
+                }}
+              >
+                <PoliIcon namaPoli={poli.nama_poli} className="w-10 h-10" color="#ffffff" />
               </div>
+              <div>
+                <h1 className="text-h1 font-bold text-white">{poli.nama_poli}</h1>
+                {poli.description && (
+                  <p className="mt-1 max-w-xl text-small text-white/85 md:text-body">
+                    {poli.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Meta chips */}
+            <div className="relative mt-6 flex flex-wrap gap-2.5">
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-small text-white/95 backdrop-blur-sm" style={{ backgroundColor: "rgba(255, 255, 255, 0.18)" }}>
+                <Users className="h-4 w-4" />
+                {poli.jumlah_dokter} dokter
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-small text-white/95 backdrop-blur-sm" style={{ backgroundColor: "rgba(255, 255, 255, 0.18)" }}>
+                <Clock className="h-4 w-4" />
+                {poli.jam_praktek}
+              </span>
             </div>
           </div>
         </motion.div>
@@ -136,7 +189,7 @@ export function PoliDetailPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
+          transition={{ duration: 0.35, delay: 0.1, ease: "easeOut" }}
         >
           <DateChipSelector
             selectedDate={selectedDate}
@@ -148,10 +201,13 @@ export function PoliDetailPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
+          transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
           className="mt-8"
         >
-          <h3 className="text-xl font-semibold mb-4" style={{ color: "var(--color-text-primary)" }}>
+          <h3
+            className="text-h2 font-semibold mb-5"
+            style={{ color: "var(--c-text)" }}
+          >
             Jadwal Dokter
           </h3>
 
@@ -162,7 +218,7 @@ export function PoliDetailPage() {
                 <Skeleton key={i} variant="card" height={120} />
               ))}
             </div>
-          ) : scheduleData?.data ? (
+          ) : (
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedDate.toISOString()}
@@ -171,26 +227,31 @@ export function PoliDetailPage() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <p className="text-sm mb-4" style={{ color: "var(--color-text-secondary)" }}>
-                  Tanggal terpilih: {format(selectedDate, "EEEE, d MMMM yyyy", { locale: id })}
+                <p className="mb-4 text-sm" style={{ color: "var(--c-text-muted)" }}>
+                  Tanggal terpilih:{" "}
+                  {format(selectedDate, "EEEE, d MMMM yyyy", { locale: id })}
                 </p>
-                <div className="space-y-4">
-                  {scheduleData.data.doctors.map((doctor: Doctor) => (
-                    <DoctorCard
-                      key={doctor.id}
-                      doctor={doctor}
-                      onDaftar={() => handleDoctorSelect(doctor)}
-                    />
-                  ))}
-                </div>
+
+                {doctors.length === 0 ? (
+                  <EmptyState
+                    icon="inbox"
+                    title="Belum Ada Jadwal"
+                    description="Tidak ada jadwal dokter pada tanggal ini. Silakan pilih tanggal lain."
+                    className="py-8"
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    {doctors.map((doctor: Doctor) => (
+                      <DoctorCard
+                        key={doctor.id}
+                        doctor={doctor}
+                        onDaftar={() => handleDoctorSelect(doctor)}
+                      />
+                    ))}
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
-          ) : (
-            <div className="text-center py-12">
-              <p style={{ color: "var(--color-text-secondary)" }}>
-                Tidak ada jadwal dokter untuk tanggal ini
-              </p>
-            </div>
           )}
         </motion.div>
       </div>
@@ -201,21 +262,4 @@ export function PoliDetailPage() {
 // Helper format date untuk API — pakai waktu lokal, BUKAN UTC
 function formatDate(date: Date): string {
   return format(date, "yyyy-MM-dd");
-}
-
-function getPoliIcon(namaPoli: string): React.ReactNode {
-  const nama = namaPoli.toLowerCase();
-  if (nama.includes("anak")) return <Baby className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("bedah")) return <Heart className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("jantung") || nama.includes("kardiologi")) return <Heart className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("mata")) return <Eye className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("orthopedi") || nama.includes("orthopedy") || nama.includes("tulang")) return <Activity className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("paru")) return <Activity className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("interne") || nama.includes("penyakit dalam")) return <Stethoscope className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("syaraf") || nama.includes("saraf") || nama.includes("neurologi")) return <Brain className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("umum")) return <Stethoscope className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("gigi") || nama.includes("dental")) return <Heart className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("kulit") || nama.includes("dermatologi")) return <Droplet className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  if (nama.includes("orthopedi")) return <Activity className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
-  return <Stethoscope className="w-8 h-8" style={{ color: "var(--color-primary)" }} />;
 }

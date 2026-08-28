@@ -1,40 +1,106 @@
 @import "tailwindcss";
 
-@layer theme {
-  :root {
-    /* Colors */
-    --color-primary: #0f9b8e;
-    --color-primary-dark: #0b7a70;
-    --color-primary-light: #e6f7f5;
-    --color-secondary: #3b82c4;
-    --color-accent: #ff7a59;
-    --color-success: #22a366;
-    --color-warning: #f5a623;
-    --color-danger: #e5484d;
-    --color-bg-base: #f7fafa;
-    --color-surface: #ffffff;
-    --color-text-primary: #16221f;
-    --color-text-secondary: #5b6b68;
-    --color-border: #e2e8e7;
+@custom-variant dark (&:where(.dark, .dark *));
 
-    /* Spacing */
-    --spacing-8: 8px;
-    --spacing-16: 16px;
-    --spacing-24: 24px;
-    --spacing-32: 32px;
-    --spacing-48: 48px;
-    --spacing-64: 64px;
+/* ============================================================
+   THEME REGISTRATION (Tailwind v4)
+   Utilities reference these vars at runtime, so overriding
+   them under .dark switches the whole app instantly.
+   ============================================================ */
+@theme {
+  /* Brand (static) */
+  --color-primary: #0f9b8e;
+  --color-primary-dark: #0b7a70;
+  --color-secondary: #3b82c4;
+  --color-accent: #ff7a59;
+  --color-success: #22a366;
+  --color-warning: #f5a623;
+  --color-danger: #e5484d;
 
-    /* Border Radius */
-    --radius-card: 16px;
-    --radius-input: 12px;
+  /* Semantic (runtime-switchable via --c-* below) */
+  --color-bg-base: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-muted: var(--c-surface-muted);
+  --color-primary-light: var(--c-primary-soft);
+  --color-text-primary: var(--c-text);
+  --color-text-secondary: var(--c-text-muted);
+  --color-border: var(--c-line);
 
-    /* Typography */
-    --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-    --font-mono: 'Space Grotesk', 'JetBrains Mono', monospace;
-  }
+  /* Radius */
+  --radius-card: 16px;
+  --radius-input: 12px;
+
+  /* Shadow */
+  --shadow-soft: 0 4px 20px var(--c-shadow-soft);
+
+  /* Layout */
+  --container-container: 1200px;
+
+  /* Typography */
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Space Grotesk", "JetBrains Mono", monospace;
+
+  --text-display: 3.5rem;
+  --text-display--line-height: 1.1;
+  --text-display--weight: 700;
+
+  --text-h1: 2rem;
+  --text-h1--line-height: 1.2;
+  --text-h1--weight: 700;
+
+  --text-h2: 1.5rem;
+  --text-h2--line-height: 1.3;
+  --text-h2--weight: 600;
+
+  --text-h3: 1.125rem;
+  --text-h3--line-height: 1.4;
+  --text-h3--weight: 600;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-body--weight: 400;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.45;
+
+  --text-label: 0.8125rem;
+  --text-label--letter-spacing: 0.02em;
+  --text-label--weight: 500;
 }
 
+/* ============================================================
+   RUNTIME SEMANTIC TOKENS — LIGHT
+   ============================================================ */
+:root {
+  --c-bg: #f7fafa;
+  --c-surface: #ffffff;
+  --c-surface-muted: #f0f5f4;
+  --c-text: #16221f;
+  --c-text-muted: #5b6b68;
+  --c-line: #e2e8e7;
+  --c-primary-soft: #e6f7f5;
+  --c-shadow-soft: rgb(15 155 142 / 0.08);
+  color-scheme: light;
+}
+
+/* ============================================================
+   RUNTIME SEMANTIC TOKENS — DARK
+   ============================================================ */
+.dark {
+  --c-bg: #0b1413;
+  --c-surface: #111c1a;
+  --c-surface-muted: #16221f;
+  --c-text: #e8f0ee;
+  --c-text-muted: #8fa39f;
+  --c-line: #1f2e2b;
+  --c-primary-soft: #0e3b37;
+  --c-shadow-soft: rgb(0 0 0 / 0.35);
+  color-scheme: dark;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
 @layer base {
   * {
     box-sizing: border-box;
@@ -45,6 +111,7 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -52,9 +119,41 @@
     font-size: 16px;
     line-height: 1.5;
     font-weight: 400;
-    color: var(--color-text-primary);
-    background: var(--color-bg-base);
+    color: var(--c-text);
+    background: var(--c-bg);
     margin: 0;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  ::selection {
+    background: rgb(15 155 142 / 0.25);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--c-line);
+    border-radius: 9999px;
+    border: 2px solid var(--c-bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--c-text-muted);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
   /* Support prefers-reduced-motion */
@@ -68,7 +167,9 @@
     }
   }
 
-  /* Print styles for Registration Status Page */
+  /* ============================================================
+     PRINT — Registration Status Page
+     ============================================================ */
   @media print {
     @page {
       margin: 20mm;
@@ -82,7 +183,6 @@
       print-color-adjust: exact;
     }
 
-    /* Hide non-printable elements */
     .no-print,
     [class*="sticky"],
     button,
@@ -94,7 +194,6 @@
       display: none !important;
     }
 
-    /* Page container */
     .min-h-screen {
       min-height: auto !important;
       padding: 0 !important;
@@ -105,13 +204,11 @@
       margin: 0 !important;
     }
 
-    /* Step indicator - hide or show compact */
     .step-indicator,
     [class*="StepIndicator"] {
       display: none !important;
     }
 
-    /* Hero status card - optimize for print */
     .hero-status-card,
     [class*="rounded-2xl"] {
       box-shadow: none !important;
@@ -120,21 +217,13 @@
       margin-bottom: 24px !important;
     }
 
-    /* Queue number - ensure visibility */
-    [style*="fontSize"] {
-      color: black !important;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-
-    /* Status badge - ensure colors print */
+    [style*="fontSize"],
     [style*="backgroundColor"],
     [style*="color: var(--color"] {
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
 
-    /* Patient summary card */
     [class*="PatientSummaryCard"],
     [class*="space-y-4"] > div {
       page-break-inside: avoid;
@@ -142,27 +231,138 @@
       background: white !important;
     }
 
-    /* Hide action buttons section */
     .mt-8.space-y-6,
     .grid.grid-cols-2.gap-3 {
       display: none !important;
     }
 
-    /* Ensure text is black */
     * {
       color: black !important;
       text-shadow: none !important;
     }
 
-    /* Links - show URL if needed */
     a[href]::after {
       content: none !important;
     }
 
-    /* Ensure queue number prints large */
     span[style*="clamp"] {
       font-size: 80pt !important;
       line-height: 1.1 !important;
     }
+  }
+}
+
+/* ============================================================
+   CUSTOM UTILITIES & EFFECTS
+   ============================================================ */
+
+/* Gradient helpers */
+.bg-gradient-primary {
+  background-image: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
+}
+
+.text-gradient {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Glass card */
+.glass {
+  background: color-mix(in srgb, var(--c-surface) 72%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--c-line) 60%, transparent);
+}
+
+/* Decorative blurred blob */
+.blob {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.35;
+}
+.dark .blob {
+  opacity: 0.18;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.animate-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--c-text) 8%, transparent),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.6s infinite;
+}
+
+/* Floating animation for hero cards */
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float {
+  animation: float-y 5s ease-in-out infinite;
+}
+.animate-float-delayed {
+  animation: float-y 6s ease-in-out 1s infinite;
+}
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  .no-print,
+  .no-print\:overflow-hidden,
+  .no-print\:rounded-card,
+  .no-print\:border,
+  .no-print\:mt-8,
+  .no-print\:space-y-3,
+  .no-print\:text-center,
+  .no-print\:text-xs,
+  .no-print\:flex,
+  .no-print\:items-center,
+  .no-print\:justify-center,
+  .no-print\:gap-1\.5 {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

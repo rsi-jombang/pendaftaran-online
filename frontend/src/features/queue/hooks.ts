@@ -6,7 +6,15 @@ export function useQueueStatus(registrationId: string | null) {
     queryKey: ["queue", "status", registrationId],
     queryFn: () => getQueueStatus(registrationId!),
     enabled: !!registrationId,
-    refetchInterval: 15000, // Polling setiap 15 detik (sesuai AGENTS.md Section 0 - polling sederhana)
-    staleTime: 10000, // 10 detik stale time untuk data antrian yang berubah cepat
+    // Polling 15 detik, auto-stop saat status "done" atau error berulang
+    refetchInterval: (query) => {
+      if (query.state.error) return 30000; // Retry lebih lambat saat error
+      const status = query.state.data?.data?.status;
+      if (status === "done") return false; // Stop polling saat selesai
+      return 15000;
+    },
+    staleTime: 10000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 15000),
   });
 }
