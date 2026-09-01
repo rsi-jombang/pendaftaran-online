@@ -4,7 +4,7 @@ import { z } from "zod";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { Input } from "../../../shared/components/ui/Input";
-import { Select } from "../../../shared/components/ui/Select";
+import { Select, SearchableSelect } from "../../../shared/components/ui";
 import { Button } from "../../../shared/components/ui/Button";
 import {
   User,
@@ -15,6 +15,7 @@ import {
   Briefcase,
   GraduationCap,
   Church,
+  Heart,
 } from "lucide-react";
 import { useProvinsi, useKabupaten, useAllKabupaten, useKecamatan, useKelurahan } from "../../../features/master";
 import type { MasterRegionItem } from "../../../features/master";
@@ -42,6 +43,7 @@ const newPatientSchema = z.object({
   occupation: z.string().optional(),
   education: z.string().optional(),
   religion: z.string().optional(),
+  status: z.string().optional(),
 });
 
 export type NewPatientFormData = z.infer<typeof newPatientSchema>;
@@ -69,9 +71,10 @@ const EDUCATION_OPTIONS = [
   "S3",
 ];
 const RELIGION_OPTIONS = ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"];
+const STATUS_OPTIONS = ["Belum Menikah", "Menikah"];
 
 function toOption(item: MasterRegionItem) {
-  return { value: item.id, label: item.nama };
+  return { value: String(item.id), label: item.nama };
 }
 
 export function NewPatientForm({
@@ -99,6 +102,8 @@ export function NewPatientForm({
   const provinceId = useWatch({ control, name: "province_id" });
   const districtId = useWatch({ control, name: "district_id" });
   const subdistrictId = useWatch({ control, name: "subdistrict_id" });
+  const villageId = useWatch({ control, name: "village_id" });
+  const birthPlace = useWatch({ control, name: "birth_place" });
 
   const provinsiQuery = useProvinsi();
   const kabupatenQuery = useKabupaten(provinceId);
@@ -112,55 +117,18 @@ export function NewPatientForm({
   const kecamatanList = kecamatanQuery.data?.data ?? [];
   const kelurahanList = kelurahanQuery.data?.data ?? [];
 
-  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    setValue("province_id", val, { shouldValidate: true });
-    setValue("district_id", "", { shouldValidate: true });
-    setValue("district_name" as any, "");
-    setValue("subdistrict_id", "", { shouldValidate: true });
-    setValue("subdistrict_name" as any, "");
-    setValue("village_id", "", { shouldValidate: true });
-    setValue("village_name" as any, "");
-  };
-
-  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    setValue("district_id", val, { shouldValidate: true });
-    const name = kabupatenList.find((k) => k.id === val)?.nama ?? "";
-    setValue("district_name" as any, name);
-    setValue("subdistrict_id", "", { shouldValidate: true });
-    setValue("subdistrict_name" as any, "");
-    setValue("village_id", "", { shouldValidate: true });
-    setValue("village_name" as any, "");
-  };
-
-  const handleSubdistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    setValue("subdistrict_id", val, { shouldValidate: true });
-    const name = kecamatanList.find((k) => k.id === val)?.nama ?? "";
-    setValue("subdistrict_name" as any, name);
-    setValue("village_id", "", { shouldValidate: true });
-    setValue("village_name" as any, "");
-  };
-
-  const handleVillageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    setValue("village_id", val, { shouldValidate: true });
-    const name = kelurahanList.find((k) => k.id === val)?.nama ?? "";
-    setValue("village_name" as any, name);
-  };
-
   const handleSubmitWrapper = (data: NewPatientFormData) => {
     onSubmit({
       ...data,
-      province_name: provinsiList.find((p) => p.id === data.province_id)?.nama ?? "",
+      province_name: provinsiList.find((p) => String(p.id) === data.province_id)?.nama ?? "",
       district_name:
-        kabupatenList.find((k) => k.id === data.district_id)?.nama ?? "",
+        kabupatenList.find((k) => String(k.id) === data.district_id)?.nama ?? "",
       subdistrict_name:
-        kecamatanList.find((k) => k.id === data.subdistrict_id)?.nama ?? "",
+        kecamatanList.find((k) => String(k.id) === data.subdistrict_id)?.nama ?? "",
       village_name:
-        kelurahanList.find((k) => k.id === data.village_id)?.nama ?? "",
+        kelurahanList.find((k) => String(k.id) === data.village_id)?.nama ?? "",
     } as NewPatientFormData);
+    console.log("Form submitted:", data);
   };
 
   return (
@@ -240,14 +208,18 @@ export function NewPatientForm({
             {...register("birth_date")}
           />
 
-          <Select
+          <SearchableSelect
             label="Tempat Lahir"
-            options={allKabupatenList.map(toOption)}
+            options={allKabupatenList.map((k) => ({ value: k.nama, label: k.nama }))}
+            value={birthPlace}
+            onChange={(value) => {
+              setValue("birth_place", value, { shouldValidate: true });
+            }}
             placeholder="Pilih kabupaten..."
+            searchPlaceholder="Cari kabupaten..."
             loading={allKabupatenQuery.isLoading}
             error={errors.birth_place?.message}
             leadingIcon={<MapPin className="w-5 h-5" />}
-            {...register("birth_place")}
           />
         </div>
 
@@ -301,43 +273,80 @@ export function NewPatientForm({
             Wilayah Domisili
           </p>
 
-          <Select
+          <SearchableSelect
             label="Provinsi"
             options={provinsiList.map(toOption)}
+            value={provinceId}
+            onChange={(value) => {
+              setValue("province_id", value, { shouldValidate: true });
+              setValue("district_id", "", { shouldValidate: true });
+              setValue("district_name" as any, "");
+              setValue("subdistrict_id", "", { shouldValidate: true });
+              setValue("subdistrict_name" as any, "");
+              setValue("village_id", "", { shouldValidate: true });
+              setValue("village_name" as any, "");
+            }}
             loading={provinsiQuery.isLoading}
             placeholder={provinsiQuery.isLoading ? "Memuat..." : "Pilih provinsi"}
+            searchPlaceholder="Cari provinsi..."
             error={errors.province_id?.message}
-            {...register("province_id", { onChange: handleProvinceChange })}
           />
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Select
+            <SearchableSelect
               label="Kabupaten"
               options={kabupatenList.map(toOption)}
+              value={districtId}
+              onChange={(value) => {
+                setValue("district_id", value, { shouldValidate: true });
+                const name = kabupatenList.find((k) => String(k.id) === value)?.nama ?? "";
+                setValue("district_name" as any, name);
+                setValue("subdistrict_id", "", { shouldValidate: true });
+                setValue("subdistrict_name" as any, "");
+                setValue("village_id", "", { shouldValidate: true });
+                setValue("village_name" as any, "");
+              }}
               loading={kabupatenQuery.isLoading}
               placeholder={provinceId ? "Pilih kabupaten" : "Pilih provinsi dulu"}
+              searchPlaceholder="Cari kabupaten..."
               error={errors.district_id?.message}
-              {...register("district_id", { onChange: handleDistrictChange })}
+              disabled={!provinceId}
             />
 
-            <Select
+            <SearchableSelect
               label="Kecamatan"
               options={kecamatanList.map(toOption)}
+              value={subdistrictId}
+              onChange={(value) => {
+                setValue("subdistrict_id", value, { shouldValidate: true });
+                const name = kecamatanList.find((k) => String(k.id) === value)?.nama ?? "";
+                setValue("subdistrict_name" as any, name);
+                setValue("village_id", "", { shouldValidate: true });
+                setValue("village_name" as any, "");
+              }}
               loading={kecamatanQuery.isLoading}
               placeholder={districtId ? "Pilih kecamatan" : "Pilih kabupaten dulu"}
+              searchPlaceholder="Cari kecamatan..."
               error={errors.subdistrict_id?.message}
-              {...register("subdistrict_id", { onChange: handleSubdistrictChange })}
+              disabled={!districtId}
             />
           </div>
 
           <div className="mt-4">
-            <Select
+            <SearchableSelect
               label="Kelurahan"
               options={kelurahanList.map(toOption)}
+              value={villageId}
+              onChange={(value) => {
+                setValue("village_id", value, { shouldValidate: true });
+                const name = kelurahanList.find((k) => String(k.id) === value)?.nama ?? "";
+                setValue("village_name" as any, name);
+              }}
               loading={kelurahanQuery.isLoading}
               placeholder={subdistrictId ? "Pilih kelurahan" : "Pilih kecamatan dulu"}
+              searchPlaceholder="Cari kelurahan..."
               error={errors.village_id?.message}
-              {...register("village_id", { onChange: handleVillageChange })}
+              disabled={!subdistrictId}
             />
           </div>
 
@@ -359,7 +368,7 @@ export function NewPatientForm({
             Data Tambahan
           </p>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               label="Pekerjaan"
               placeholder="Pekerjaan"
@@ -367,6 +376,16 @@ export function NewPatientForm({
               {...register("occupation")}
             />
 
+            <Select
+              label="Status Perkawinan"
+              options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))}
+              placeholder="Pilih status"
+              leadingIcon={<Heart className="w-5 h-5" />}
+              {...register("status")}
+            />
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Select
               label="Pendidikan"
               options={EDUCATION_OPTIONS.map((s) => ({ value: s, label: s }))}
