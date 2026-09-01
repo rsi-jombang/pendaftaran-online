@@ -10,6 +10,20 @@ export interface PatientData {
   gender: "male" | "female";
   phone: string;
   address?: string;
+  sebutan?: string;
+  birth_place?: string;
+  status?: string;
+  province_id?: string;
+  province_name?: string;
+  district_id?: string;
+  district_name?: string;
+  subdistrict_id?: string;
+  subdistrict_name?: string;
+  village_id?: string;
+  village_name?: string;
+  occupation?: string;
+  education?: string;
+  religion?: string;
 }
 
 export interface CheckNikResponseData {
@@ -28,6 +42,20 @@ export interface RegisterPatientRequest {
   gender: "male" | "female";
   address: string;
   phone: string;
+  sebutan?: string;
+  birth_place?: string;
+  status?: string;
+  province_id?: string;
+  province_name?: string;
+  district_id?: string;
+  district_name?: string;
+  subdistrict_id?: string;
+  subdistrict_name?: string;
+  village_id?: string;
+  village_name?: string;
+  occupation?: string;
+  education?: string;
+  religion?: string;
 }
 
 export interface RegisterPatientResponse {

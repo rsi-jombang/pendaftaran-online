@@ -1,11 +1,23 @@
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { Input } from "../../../shared/components/ui/Input";
+import { Select } from "../../../shared/components/ui/Select";
 import { Button } from "../../../shared/components/ui/Button";
-import { User, Calendar, MapPin, Phone } from "lucide-react";
+import {
+  User,
+  Calendar,
+  MapPin,
+  Phone,
+  Map,
+  Briefcase,
+  GraduationCap,
+  Church,
+} from "lucide-react";
+import { useProvinsi, useKabupaten, useAllKabupaten, useKecamatan, useKelurahan } from "../../../features/master";
+import type { MasterRegionItem } from "../../../features/master";
 
 // Tanggal hari ini dalam waktu lokal (bukan UTC)
 const todayLocal = format(new Date(), "yyyy-MM-dd");
@@ -21,6 +33,15 @@ const newPatientSchema = z.object({
     .min(10, "Nomor HP minimal 10 digit")
     .max(15, "Nomor HP maksimal 15 digit")
     .regex(/^[0-9]+$/, "Nomor HP hanya boleh berisi angka"),
+  sebutan: z.string().optional(),
+  birth_place: z.string().min(1, "Tempat lahir wajib dipilih"),
+  province_id: z.string().min(1, "Provinsi wajib dipilih"),
+  district_id: z.string().min(1, "Kabupaten wajib dipilih"),
+  subdistrict_id: z.string().min(1, "Kecamatan wajib dipilih"),
+  village_id: z.string().min(1, "Kelurahan wajib dipilih"),
+  occupation: z.string().optional(),
+  education: z.string().optional(),
+  religion: z.string().optional(),
 });
 
 export type NewPatientFormData = z.infer<typeof newPatientSchema>;
@@ -33,10 +54,38 @@ interface NewPatientFormProps {
   onCancel: () => void;
 }
 
-export function NewPatientForm({ nik, onSubmit, isLoading = false, error, onCancel }: NewPatientFormProps) {
+const SEBUTAN_OPTIONS = ["An.", "Tn.", "Ny.", "Sdr."];
+const EDUCATION_OPTIONS = [
+  "Tidak Sekolah",
+  "SD",
+  "SMP",
+  "SMA/SMK",
+  "D1",
+  "D2",
+  "D3",
+  "D4",
+  "S1",
+  "S2",
+  "S3",
+];
+const RELIGION_OPTIONS = ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"];
+
+function toOption(item: MasterRegionItem) {
+  return { value: item.id, label: item.nama };
+}
+
+export function NewPatientForm({
+  nik,
+  onSubmit,
+  isLoading = false,
+  error,
+  onCancel,
+}: NewPatientFormProps) {
   const {
     register,
     handleSubmit,
+    control,
+    setValue,
     formState: { errors },
   } = useForm<NewPatientFormData>({
     resolver: zodResolver(newPatientSchema),
@@ -46,6 +95,73 @@ export function NewPatientForm({ nik, onSubmit, isLoading = false, error, onCanc
     },
     mode: "onBlur",
   });
+
+  const provinceId = useWatch({ control, name: "province_id" });
+  const districtId = useWatch({ control, name: "district_id" });
+  const subdistrictId = useWatch({ control, name: "subdistrict_id" });
+
+  const provinsiQuery = useProvinsi();
+  const kabupatenQuery = useKabupaten(provinceId);
+  const allKabupatenQuery = useAllKabupaten();
+  const kecamatanQuery = useKecamatan(districtId, provinceId);
+  const kelurahanQuery = useKelurahan(subdistrictId);
+
+  const provinsiList = provinsiQuery.data?.data ?? [];
+  const kabupatenList = kabupatenQuery.data?.data ?? [];
+  const allKabupatenList = allKabupatenQuery.data?.data ?? [];
+  const kecamatanList = kecamatanQuery.data?.data ?? [];
+  const kelurahanList = kelurahanQuery.data?.data ?? [];
+
+  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setValue("province_id", val, { shouldValidate: true });
+    setValue("district_id", "", { shouldValidate: true });
+    setValue("district_name" as any, "");
+    setValue("subdistrict_id", "", { shouldValidate: true });
+    setValue("subdistrict_name" as any, "");
+    setValue("village_id", "", { shouldValidate: true });
+    setValue("village_name" as any, "");
+  };
+
+  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setValue("district_id", val, { shouldValidate: true });
+    const name = kabupatenList.find((k) => k.id === val)?.nama ?? "";
+    setValue("district_name" as any, name);
+    setValue("subdistrict_id", "", { shouldValidate: true });
+    setValue("subdistrict_name" as any, "");
+    setValue("village_id", "", { shouldValidate: true });
+    setValue("village_name" as any, "");
+  };
+
+  const handleSubdistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setValue("subdistrict_id", val, { shouldValidate: true });
+    const name = kecamatanList.find((k) => k.id === val)?.nama ?? "";
+    setValue("subdistrict_name" as any, name);
+    setValue("village_id", "", { shouldValidate: true });
+    setValue("village_name" as any, "");
+  };
+
+  const handleVillageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setValue("village_id", val, { shouldValidate: true });
+    const name = kelurahanList.find((k) => k.id === val)?.nama ?? "";
+    setValue("village_name" as any, name);
+  };
+
+  const handleSubmitWrapper = (data: NewPatientFormData) => {
+    onSubmit({
+      ...data,
+      province_name: provinsiList.find((p) => p.id === data.province_id)?.nama ?? "",
+      district_name:
+        kabupatenList.find((k) => k.id === data.district_id)?.nama ?? "",
+      subdistrict_name:
+        kecamatanList.find((k) => k.id === data.subdistrict_id)?.nama ?? "",
+      village_name:
+        kelurahanList.find((k) => k.id === data.village_id)?.nama ?? "",
+    } as NewPatientFormData);
+  };
 
   return (
     <motion.div
@@ -89,7 +205,7 @@ export function NewPatientForm({ nik, onSubmit, isLoading = false, error, onCanc
       </div>
 
       {/* Registration Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(handleSubmitWrapper)} className="space-y-4">
         <Input
           label="NIK"
           type="text"
@@ -106,14 +222,34 @@ export function NewPatientForm({ nik, onSubmit, isLoading = false, error, onCanc
           {...register("name")}
         />
 
-        <Input
-          label="Tanggal Lahir"
-          type="date"
-          error={errors.birth_date?.message}
-          leadingIcon={<Calendar className="w-5 h-5" />}
-          max={todayLocal}
-          {...register("birth_date")}
+        <Select
+          label="Sebutan"
+          options={SEBUTAN_OPTIONS.map((s) => ({ value: s, label: s }))}
+          placeholder="Pilih sebutan..."
+          error={errors.sebutan?.message}
+          {...register("sebutan")}
         />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input
+            label="Tanggal Lahir"
+            type="date"
+            error={errors.birth_date?.message}
+            leadingIcon={<Calendar className="w-5 h-5" />}
+            max={todayLocal}
+            {...register("birth_date")}
+          />
+
+          <Select
+            label="Tempat Lahir"
+            options={allKabupatenList.map(toOption)}
+            placeholder="Pilih kabupaten..."
+            loading={allKabupatenQuery.isLoading}
+            error={errors.birth_place?.message}
+            leadingIcon={<MapPin className="w-5 h-5" />}
+            {...register("birth_place")}
+          />
+        </div>
 
         <div>
           <label className="block text-label mb-2 uppercase" style={{ color: "var(--color-text-primary)" }}>
@@ -158,13 +294,96 @@ export function NewPatientForm({ nik, onSubmit, isLoading = false, error, onCanc
           )}
         </div>
 
-        <Input
-          label="Alamat Lengkap"
-          placeholder="Jl. Contoh No. 123, Kota"
-          error={errors.address?.message}
-          leadingIcon={<MapPin className="w-5 h-5" />}
-          {...register("address")}
-        />
+        {/* Wilayah/Alamat */}
+        <div className="pt-2">
+          <p className="flex items-center gap-2 text-label uppercase mb-3" style={{ color: "var(--color-text-primary)" }}>
+            <Map className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+            Wilayah Domisili
+          </p>
+
+          <Select
+            label="Provinsi"
+            options={provinsiList.map(toOption)}
+            loading={provinsiQuery.isLoading}
+            placeholder={provinsiQuery.isLoading ? "Memuat..." : "Pilih provinsi"}
+            error={errors.province_id?.message}
+            {...register("province_id", { onChange: handleProvinceChange })}
+          />
+
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Select
+              label="Kabupaten"
+              options={kabupatenList.map(toOption)}
+              loading={kabupatenQuery.isLoading}
+              placeholder={provinceId ? "Pilih kabupaten" : "Pilih provinsi dulu"}
+              error={errors.district_id?.message}
+              {...register("district_id", { onChange: handleDistrictChange })}
+            />
+
+            <Select
+              label="Kecamatan"
+              options={kecamatanList.map(toOption)}
+              loading={kecamatanQuery.isLoading}
+              placeholder={districtId ? "Pilih kecamatan" : "Pilih kabupaten dulu"}
+              error={errors.subdistrict_id?.message}
+              {...register("subdistrict_id", { onChange: handleSubdistrictChange })}
+            />
+          </div>
+
+          <div className="mt-4">
+            <Select
+              label="Kelurahan"
+              options={kelurahanList.map(toOption)}
+              loading={kelurahanQuery.isLoading}
+              placeholder={subdistrictId ? "Pilih kelurahan" : "Pilih kecamatan dulu"}
+              error={errors.village_id?.message}
+              {...register("village_id", { onChange: handleVillageChange })}
+            />
+          </div>
+
+          <div className="mt-4">
+            <Input
+              label="Alamat Lengkap (Jalan, No. Rumah, RT/RW)"
+              placeholder="Jl. Contoh No. 123, RT 01 RW 02"
+              error={errors.address?.message}
+              leadingIcon={<MapPin className="w-5 h-5" />}
+              {...register("address")}
+            />
+          </div>
+        </div>
+
+        {/* Data Tambahan */}
+        <div className="pt-2">
+          <p className="flex items-center gap-2 text-label uppercase mb-3" style={{ color: "var(--color-text-primary)" }}>
+            <Briefcase className="w-4 h-4" style={{ color: "var(--color-primary)" }} />
+            Data Tambahan
+          </p>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Input
+              label="Pekerjaan"
+              placeholder="Pekerjaan"
+              leadingIcon={<Briefcase className="w-5 h-5" />}
+              {...register("occupation")}
+            />
+
+            <Select
+              label="Pendidikan"
+              options={EDUCATION_OPTIONS.map((s) => ({ value: s, label: s }))}
+              placeholder="Pilih pendidikan"
+              leadingIcon={<GraduationCap className="w-5 h-5" />}
+              {...register("education")}
+            />
+
+            <Select
+              label="Agama"
+              options={RELIGION_OPTIONS.map((s) => ({ value: s, label: s }))}
+              placeholder="Pilih agama"
+              leadingIcon={<Church className="w-5 h-5" />}
+              {...register("religion")}
+            />
+          </div>
+        </div>
 
         <Input
           label="Nomor HP"

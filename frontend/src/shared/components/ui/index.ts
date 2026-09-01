@@ -15,3 +15,6 @@ export type { SkeletonProps } from "./Skeleton";
 
 export { StepIndicator } from "./StepIndicator";
 export type { StepIndicatorProps } from "./StepIndicator";
+
+export { Select } from "./Select";
+export type { SelectProps, SelectOption } from "./Select";

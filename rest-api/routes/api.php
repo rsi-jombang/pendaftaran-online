@@ -16,6 +16,7 @@ Route::middleware(['throttle:api'])->group(function () {
 
     Route::prefix('v1')->group(function () {
         Route::middleware(['throttle:api-register'])->group(function () {
+            Route::post('/patients', 'App\Http\Controllers\Api\PatientController@register');
         });
 
         Route::middleware(['throttle:api'])->group(function () {
@@ -24,6 +25,15 @@ Route::middleware(['throttle:api'])->group(function () {
                 Route::get('/poli/{slug_poli}', 'get_poli_by_slug');
                 Route::get('/poli/{slug_poli}/schedules', 'get_jadwal_poli');
             });
+
+            Route::group(['controller' => 'App\Http\Controllers\Api\MasterController'], function () {
+                Route::get('/master/provinsi', 'provinsi');
+                Route::get('/master/kabupaten', 'kabupaten');
+                Route::get('/master/kecamatan', 'kecamatan');
+                Route::get('/master/kelurahan', 'kelurahan');
+            });
+
+            Route::post('/patients/check-nik', 'App\Http\Controllers\Api\PatientController@checkNik');
         });
 
         // Route::middleware(['throttle:api-auth'])->group(function () {
