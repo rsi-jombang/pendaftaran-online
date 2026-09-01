@@ -93,7 +93,7 @@ export function NikCheckPage() {
         />
       </div>
 
-      <div className="relative mx-auto max-w-md">
+      <div className="relative mx-auto max-w-xl">
         {/* Step Indicator */}
         <StepIndicator currentStep={1} steps={steps} />
 
