@@ -10,7 +10,7 @@ export const router = createBrowserRouter([
   // Publik — tanpa guard
   { path: "/", element: <LandingPage /> },
   { path: "/poli", element: <PoliListPage /> },
-  { path: "/poli/:poliId", element: <PoliDetailPage /> },
+  { path: "/poli/:slug", element: <PoliDetailPage /> },
 
   // Guarded — alur pendaftaran (wizard, berurutan)
   { path: "/cek-nik", element: <NikCheckPage /> },

@@ -21,12 +21,12 @@ import { id } from "date-fns/locale";
 
 export function PoliDetailPage() {
   const navigate = useNavigate();
-  const { poliId } = useParams<{ poliId: string }>();
-  const slugPoli = poliId ?? null;
+  const { slug } = useParams<{ slug: string }>();
+  const slugValue = slug ?? null;
   const { setPendingSelection } = useRegistrationFlowStore();
 
-  // Fetch poli detail dari API menggunakan slug_poli dari URL
-  const { data: poliData, isLoading: isPoliLoading } = usePoliDetail(slugPoli);
+  // Fetch poli detail dari API menggunakan slug dari URL
+  const { data: poliData, isLoading: isPoliLoading } = usePoliDetail(slugValue);
 
   // Date state - default hari ini
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
@@ -37,7 +37,7 @@ export function PoliDetailPage() {
 
   // Fetch jadwal dokter berdasarkan tanggal
   const { data: scheduleData, isLoading } = useDoctorSchedule(
-    slugPoli,
+    slugValue,
     formatDate(selectedDate)
   );
 
@@ -52,7 +52,8 @@ export function PoliDetailPage() {
         date: formatDate(selectedDate),
         practiceHours: doctor.practice_hours,
       });
-      navigate("/cek-nik");
+      const hasPatient = !!useRegistrationFlowStore.getState().patient;
+      navigate(hasPatient ? "/daftar" : "/cek-nik");
     }
   };
 

@@ -47,7 +47,8 @@ export function NikCheckPage() {
     const patient = checkNikMutation.data?.data?.patient;
     if (patient) {
       setPatient(patient);
-      navigate("/poli");
+      const hasSelection = !!useRegistrationFlowStore.getState().pendingSelection;
+      navigate(hasSelection ? "/daftar" : "/poli");
     }
   }, [checkNikMutation.data, setPatient, navigate]);
 
@@ -59,7 +60,8 @@ export function NikCheckPage() {
       const response = await registerPatientMutation.mutateAsync(data);
       if (response.data) {
         setPatient(response.data);
-        navigate("/poli");
+        const hasSelection = !!useRegistrationFlowStore.getState().pendingSelection;
+        navigate(hasSelection ? "/daftar" : "/poli");
       }
     } catch {
       setLastError("Gagal mendaftarkan pasien. Silakan coba lagi.");
