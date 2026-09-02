@@ -25,6 +25,7 @@ export interface PoliDetailResponse {
 export type DoctorSource = "bpjs" | "non_bpjs";
 
 export interface Doctor {
+  jadwal_id: number;
   id: string;
   name: string;
   avatar_url?: string;

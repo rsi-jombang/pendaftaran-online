@@ -6,22 +6,37 @@ import { z } from "zod";
 import { motion } from "framer-motion";
 import { Card } from "../../../shared/components/ui/Card";
 import { Input } from "../../../shared/components/ui/Input";
+import { SearchableSelect } from "../../../shared/components/ui";
 import { Button } from "../../../shared/components/ui/Button";
 import { ErrorState } from "../../../shared/components/feedback/ErrorState";
 import { useSubmitRegistration } from "../../../features/registration/hooks";
 import { useRegistrationFlowStore } from "../../../shared/store/registrationFlowStore";
-import { User, CreditCard, Phone, AlertCircle } from "lucide-react";
+import { useAsuransi, usePerusahaan } from "../../../features/master";
+import { User, CreditCard, Phone, AlertCircle, UserCheck } from "lucide-react";
 
 const registrationSchema = z.object({
   patient_name: z.string().min(1, "Nama pasien wajib diisi"),
   patient_nik: z.string().length(16, "NIK harus 16 digit"),
   patient_phone: z.string().min(10, "Nomor HP minimal 10 digit"),
-  complaint: z.string().max(500, "Keluhan maksimal 500 karakter").optional(),
-  arrival_method: z.enum(["datang_langsung", "di_jemput"]),
+  payment_method: z.enum(["umum", "asuransi", "rekanan"]),
+  insurance_id: z.string().optional(),
+  company_id: z.string().optional(),
+  responsible_name: z.string().optional(),
+  responsible_phone: z.string().optional(),
   consent: z.boolean().refine((val) => val === true, {
     message: "Wajib menyetujui persetujuan data",
   }),
-});
+}).refine(
+  (data) => {
+    if (data.payment_method === "asuransi") return !!data.insurance_id;
+    if (data.payment_method === "rekanan") return !!data.company_id;
+    return true;
+  },
+  {
+    message: "Wajib memilih asuransi atau perusahaan yang sesuai",
+    path: ["insurance_id"],
+  }
+);
 
 export type RegistrationFormData = z.infer<typeof registrationSchema>;
 
@@ -34,6 +49,9 @@ export function RegistrationForm() {
 
   const submitMutation = useSubmitRegistration();
 
+  const asuransiQuery = useAsuransi();
+  const perusahaanQuery = usePerusahaan();
+
   const {
     register,
     handleSubmit,
@@ -45,7 +63,7 @@ export function RegistrationForm() {
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
-      arrival_method: "datang_langsung",
+      payment_method: "umum",
       consent: false,
     },
     mode: "onBlur",
@@ -61,13 +79,27 @@ export function RegistrationForm() {
   }, [patient, setValue]);
 
   const watchedConsent = watch("consent");
+  const watchedPaymentMethod = watch("payment_method");
   const isFormValid = !errors.consent && watchedConsent;
+
+  // Reset insurance_id when payment_method changes to non-asuransi
+  // Reset company_id when payment_method changes to non-rekanan
+  useEffect(() => {
+    if (watchedPaymentMethod !== "asuransi") {
+      setValue("insurance_id", "", { shouldValidate: true });
+    }
+    if (watchedPaymentMethod !== "rekanan") {
+      setValue("company_id", "", { shouldValidate: true });
+    }
+  }, [watchedPaymentMethod, setValue]);
 
   const formatDateForApi = (dateStr: string): string => {
     return dateStr; // already in ISO format from pendingSelection
   };
 
   const onSubmit = async (data: RegistrationFormData) => {
+    console.log("Submitting registration with data:", data);
+    console.log("Pending selection:", pendingSelection);
     clearErrors();
 
     if (!patient || !pendingSelection) return;
@@ -76,10 +108,17 @@ export function RegistrationForm() {
       await submitMutation.mutateAsync({
         patient_id: patient.id,
         poli_id: pendingSelection.poliId,
+        jadwal_id: pendingSelection.jadwalId,
         doctor_id: pendingSelection.doctorId,
+        doctorName: pendingSelection.doctorName,
+        poliName: pendingSelection.poliName,
+        practiceHours: pendingSelection.practiceHours,
         date: formatDateForApi(pendingSelection.date),
-        complaint: data.complaint || "",
-        arrival_method: data.arrival_method,
+        payment_method: data.payment_method,
+        insurance_id: data.insurance_id || undefined,
+        company_id: data.company_id || undefined,
+        responsible_name: data.responsible_name || undefined,
+        responsible_phone: data.responsible_phone || undefined,
       });
     } catch (err: any) {
       if (err.errors) {
@@ -90,8 +129,11 @@ export function RegistrationForm() {
             poli_id: "patient_name",
             doctor_id: "patient_name",
             date: "patient_name",
-            complaint: "complaint",
-            arrival_method: "arrival_method",
+            payment_method: "payment_method",
+            insurance_id: "insurance_id",
+            company_id: "company_id",
+            responsible_name: "responsible_name",
+            responsible_phone: "responsible_phone",
           };
           const formField = fieldMap[field] || field;
           setError(formField as keyof RegistrationFormData, {
@@ -211,91 +253,92 @@ export function RegistrationForm() {
                 />
               </div>
 
-              {/* Complaint */}
-              <div>
-                <label
-                  className="mb-2 block text-label uppercase"
-                  style={{ color: "var(--c-text)" }}
-                >
-                  Keluhan / Catatan{" "}
-                  <span style={{ color: "var(--c-text-muted)" }}>(opsional)</span>
-                </label>
-                <textarea
-                  {...register("complaint")}
-                  rows={3}
-                  className="w-full resize-none rounded-input border-2 bg-surface px-4 py-3 text-body text-text-primary transition-all placeholder:text-text-secondary/70 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
-                  placeholder="Tulis keluhan singkat atau catatan untuk dokter..."
-                  style={{ fontFamily: "inherit" }}
-                />
-                {errors.complaint && (
-                  <p className="mt-1.5 text-sm" style={{ color: "var(--c-danger)" }}>
-                    {errors.complaint.message}
-                  </p>
-                )}
-                <p className="mt-1 text-right text-xs" style={{ color: "var(--c-text-muted)" }}>
-                  {watch("complaint")?.length || 0}/500 karakter
-                </p>
-              </div>
-
-              {/* Arrival Method */}
+              {/* Payment Method */}
               <div>
                 <label
                   className="mb-3 block text-label uppercase"
                   style={{ color: "var(--c-text)" }}
                 >
-                  Metode Kedatangan
+                  Pembayaran
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <label
-                    className="flex cursor-pointer items-center gap-3 rounded-input border-2 p-4 transition-all"
-                    style={{
-                      borderColor: "var(--c-border)",
-                      backgroundColor: "var(--c-surface)",
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      value="datang_langsung"
-                      {...register("arrival_method")}
-                      className="h-4 w-4 accent-[var(--c-primary)]"
-                    />
-                    <div>
-                      <span className="text-small font-medium" style={{ color: "var(--c-text)" }}>
-                        Datang Langsung
-                      </span>
-                      <p className="mt-0.5 text-xs" style={{ color: "var(--c-text-muted)" }}>
-                        Kunjungi rumah sakit sendiri
-                      </p>
-                    </div>
-                  </label>
-                  <label
-                    className="flex cursor-pointer items-center gap-3 rounded-input border-2 p-4 transition-all"
-                    style={{
-                      borderColor: "var(--c-border)",
-                      backgroundColor: "var(--c-surface)",
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      value="di_jemput"
-                      {...register("arrival_method")}
-                      className="h-4 w-4 accent-[var(--c-primary)]"
-                    />
-                    <div>
-                      <span className="text-small font-medium" style={{ color: "var(--c-text)" }}>
-                        Dijemput
-                      </span>
-                      <p className="mt-0.5 text-xs" style={{ color: "var(--c-text-muted)" }}>
-                        Butuh jemputan ambulans/transport
-                      </p>
-                    </div>
-                  </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {(["umum", "asuransi", "rekanan"] as const).map((method) => (
+                    <label
+                      key={method}
+                      className="flex cursor-pointer items-center gap-3 rounded-input border-2 p-4 transition-all"
+                      style={{
+                        borderColor: watchedPaymentMethod === method ? "var(--c-primary)" : "var(--c-border)",
+                        backgroundColor: watchedPaymentMethod === method ? "var(--c-primary-soft)" : "var(--c-surface)",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        value={method}
+                        {...register("payment_method")}
+                        className="h-4 w-4 accent-[var(--c-primary)]"
+                      />
+                      <div>
+                        <span className="text-small font-medium capitalize" style={{ color: "var(--c-text)" }}>
+                          {method}
+                        </span>
+                      </div>
+                    </label>
+                  ))}
                 </div>
-                {errors.arrival_method && (
+                {errors.payment_method && (
                   <p className="mt-2 text-sm" style={{ color: "var(--c-danger)" }}>
-                    {errors.arrival_method.message}
+                    {errors.payment_method.message}
                   </p>
                 )}
+              </div>
+
+              {/* Asuransi & Perusahaan (conditional) */}
+              {watchedPaymentMethod !== "umum" && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {watchedPaymentMethod === "asuransi" && (
+                    <SearchableSelect
+                      label="Asuransi"
+                      options={(asuransiQuery.data?.data ?? []).map((item) => ({ value: String(item.id), label: item.nama }))}
+                      value={watch("insurance_id") || ""}
+                      onChange={(value) => setValue("insurance_id", value, { shouldValidate: true })}
+                      loading={asuransiQuery.isLoading}
+                      placeholder="Pilih asuransi"
+                      searchPlaceholder="Cari asuransi..."
+                      error={errors.insurance_id?.message}
+                    />
+                  )}
+                  {watchedPaymentMethod === "rekanan" && (
+                    <SearchableSelect
+                      label="Perusahaan"
+                      options={(perusahaanQuery.data?.data ?? []).map((item) => ({ value: String(item.id), label: item.nama }))}
+                      value={watch("company_id") || ""}
+                      onChange={(value) => setValue("company_id", value, { shouldValidate: true })}
+                      loading={perusahaanQuery.isLoading}
+                      placeholder="Pilih perusahaan"
+                      searchPlaceholder="Cari perusahaan..."
+                      error={errors.company_id?.message}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Penanggung Jawab */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Input
+                  label="Nama Penanggung Jawab"
+                  placeholder="Nama lengkap penanggung jawab"
+                  leadingIcon={<UserCheck className="h-4 w-4" />}
+                  {...register("responsible_name")}
+                  error={errors.responsible_name?.message}
+                />
+                <Input
+                  label="Telp Penanggung Jawab"
+                  type="tel"
+                  placeholder="081234567890"
+                  leadingIcon={<Phone className="h-4 w-4" />}
+                  {...register("responsible_phone")}
+                  error={errors.responsible_phone?.message}
+                />
               </div>
 
               {/* Consent Checkbox */}

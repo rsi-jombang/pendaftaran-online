@@ -1,10 +1,17 @@
 export interface RegistrationPayload {
   patient_id: string;
   poli_id: string;
+  jadwal_id: number;
   doctor_id: string;
+  doctorName: string;
+  poliName: string;
+  practiceHours: string;
   date: string; // ISO format YYYY-MM-DD
-  complaint: string;
-  arrival_method: "datang_langsung" | "di_jemput";
+  payment_method: "umum" | "asuransi" | "rekanan";
+  insurance_id?: string;
+  company_id?: string;
+  responsible_name?: string;
+  responsible_phone?: string;
 }
 
 export interface RegistrationResult {

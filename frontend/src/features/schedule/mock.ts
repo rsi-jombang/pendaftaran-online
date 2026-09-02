@@ -6,6 +6,7 @@
 export const generateMockSchedule = (poliId: string, poliName: string, date: string) => {
   const doctors = [
     {
+      jadwal_id: 1,
       id: "DOK-01",
       name: "dr. Sarah Wijaya, Sp.A",
       avatar_url: "/doctor-female.png",
@@ -15,6 +16,7 @@ export const generateMockSchedule = (poliId: string, poliName: string, date: str
       status: "BUKA" as const,
     },
     {
+      jadwal_id: 2,
       id: "DOK-02",
       name: "dr. Andi Prasetyo, Sp.A",
       avatar_url: "/doctor-male.png",
@@ -24,6 +26,7 @@ export const generateMockSchedule = (poliId: string, poliName: string, date: str
       status: "TUTUP" as const,
     },
     {
+      jadwal_id: 3,
       id: "DOK-03",
       name: "dr. Maya Sari, Sp.PD",
       avatar_url: "/doctor-female.png",
@@ -33,6 +36,7 @@ export const generateMockSchedule = (poliId: string, poliName: string, date: str
       status: "BELUM BUKA" as const,
     },
     {
+      jadwal_id: 4,
       id: "DOK-04",
       name: "dr. Budi Santoso, Sp.M",
       avatar_url: "/doctor-male.png",

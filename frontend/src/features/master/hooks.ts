@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProvinsi, getKabupaten, getKecamatan, getKelurahan } from "./api";
+import { getProvinsi, getKabupaten, getKecamatan, getKelurahan, getAsuransi, getPerusahaan } from "./api";
 
 export function useProvinsi() {
   return useQuery({
@@ -43,6 +43,22 @@ export function useKelurahan(noKec: string | null | undefined) {
     queryKey: ["master", "kelurahan", noKec ?? ""],
     queryFn: () => getKelurahan(noKec as string),
     enabled: !!noKec,
+    staleTime: 30 * 60 * 1000,
+  });
+}
+
+export function useAsuransi() {
+  return useQuery({
+    queryKey: ["master", "asuransi"],
+    queryFn: getAsuransi,
+    staleTime: 30 * 60 * 1000,
+  });
+}
+
+export function usePerusahaan() {
+  return useQuery({
+    queryKey: ["master", "perusahaan"],
+    queryFn: getPerusahaan,
     staleTime: 30 * 60 * 1000,
   });
 }

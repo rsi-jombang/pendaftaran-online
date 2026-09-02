@@ -41,6 +41,7 @@ export interface RegistrationResult {
 export interface PendingSelection {
   poliId: string;
   poliName: string;
+  jadwalId: number;
   doctorId: string;
   doctorName: string;
   date: string;

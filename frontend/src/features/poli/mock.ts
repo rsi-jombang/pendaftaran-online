@@ -221,6 +221,7 @@ export const mockPoliDetail: Record<string, PoliDetailResponse> = {
 
 const generateDoctorSchedule = (poliId: string, date: string) => {
   const doctor = {
+    jadwal_id: 1,
     id: "DOK-01",
     name: "dr. Dokter Utama",
     avatar_url: "/doctor-male.png",

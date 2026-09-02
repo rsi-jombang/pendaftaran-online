@@ -114,4 +114,41 @@ class MasterController extends BaseController
 
         return $this->success($items, 'Data kelurahan berhasil diambil.', Response::HTTP_OK);
     }
+
+    /**
+     * Daftar Asuransi.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function asuransi()
+    {
+        $items = DB::table('smis_rg_asuransi')
+            ->select('id as id', DB::raw('TRIM(nama) as nama'))
+            ->whereNotNull('nama')
+            ->where('prop', '!=', 'del')
+            ->whereNotIn('nama', ['BPJS Kesehatan', 'BPJS PBI'])
+            ->orderBy('nama')
+            ->get();
+
+        return $this->success($items, 'Data asuransi berhasil diambil.', Response::HTTP_OK);
+    }
+
+    /**
+     * Daftar Perusahaan.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function perusahaan()
+    {
+        $items = DB::table('smis_rg_perusahaan')
+            ->select('id as id', DB::raw('TRIM(nama) as nama'))
+            ->whereNotNull('nama')
+            ->where('prop', '!=', 'del')
+            ->orderBy('nama')
+            ->get();
+
+        return $this->success($items, 'Data perusahaan berhasil diambil.', Response::HTTP_OK);
+    }
 }

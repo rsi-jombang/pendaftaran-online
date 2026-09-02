@@ -207,6 +207,7 @@ class PoliController extends BaseController
             ->where('jp.slug_poli', $slug_poli)
             ->where('jp.hari', $hari)
             ->select([
+                'jp.id as jadwal_id',
                 'jp.id_dokter as id',
                 'e.nama as name',
                 'e.jk',
@@ -237,6 +238,7 @@ class PoliController extends BaseController
             $avatarUrl = "/doctor-{$gender}.png";
 
             return [
+                'jadwal_id' => (int) $doc->jadwal_id,
                 'id' => (int) $doc->id,
                 'name' => $doc->name,
                 'avatar_url' => $avatarUrl,
