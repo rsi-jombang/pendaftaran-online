@@ -5,11 +5,11 @@ import { HeroSection } from "./components/HeroSection";
 import { KeunggulanSection } from "./components/KeunggulanSection";
 import { PoliSection } from "./components/PoliSection";
 import { CtaBanner } from "./components/CtaBanner";
-import { usePoliList } from "../../features/poli/hooks";
+import { usePoliListToday } from "../../features/poli/hooks";
 
 export function LandingPage() {
   const navigate = useNavigate();
-  const { data: poliData, isLoading: isPoliLoading } = usePoliList();
+  const { data: poliData, isLoading: isPoliLoading } = usePoliListToday();
 
   const polis = poliData?.data ?? [];
   const poliCount = polis.length;

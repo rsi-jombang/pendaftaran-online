@@ -47,6 +47,7 @@ export function PoliDetailPage() {
       setPendingSelection({
         poliId: poli.slug_poli,
         poliName: poli.nama_poli,
+        kodePoli: poli.kode_poli ?? "",
         jadwalId: doctor.jadwal_id,
         doctorId: doctor.id,
         doctorName: doctor.name,

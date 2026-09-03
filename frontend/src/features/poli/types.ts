@@ -1,6 +1,7 @@
 export interface Poli {
   id: string;
   slug_poli: string;
+  kode_poli?: string;
   name: string;
   nama_poli: string;
   category: string;

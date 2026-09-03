@@ -1,5 +1,5 @@
 import { Card } from "../../../shared/components/ui/Card";
-import { User, Calendar, Stethoscope, Clock, Users } from "lucide-react";
+import { User, Calendar, Stethoscope, Users } from "lucide-react";
 import type { RegistrationStatus } from "../../../features/queue/types";
 
 interface PatientSummaryCardProps {
@@ -167,40 +167,6 @@ export function PatientSummaryCard({ data }: PatientSummaryCardProps) {
             </div>
           </div>
         </div>
-
-        {/* Estimated Wait Time */}
-        {data.estimated_wait_minutes > 0 && data.status === "waiting" && (
-          <div
-            className="flex items-center gap-3 rounded-input p-4"
-            style={{
-              backgroundColor: "color-mix(in srgb, var(--c-warning) 8%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--c-warning) 18%, transparent)",
-            }}
-          >
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-              style={{
-                backgroundColor: "color-mix(in srgb, var(--c-warning) 15%, transparent)",
-              }}
-            >
-              <Clock className="h-4 w-4" style={{ color: "var(--c-warning)" }} />
-            </div>
-            <div>
-              <p className="text-[11px] font-medium" style={{ color: "var(--c-warning)" }}>
-                Estimasi Waktu Tunggu
-              </p>
-              <p
-                className="text-xl font-bold"
-                style={{
-                  color: "var(--c-warning)",
-                  fontFamily: "'Space Grotesk', monospace",
-                }}
-              >
-                {data.estimated_wait_minutes} menit
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </Card>
   );

@@ -1,8 +1,10 @@
 import { api } from "../../shared/lib/axios";
 import type { PoliListResponse, PoliDetailResponse, DoctorScheduleResponse } from "./types";
 
-export async function getPoliList(): Promise<PoliListResponse> {
-  const response = await api.get<PoliListResponse>("/v1/poli-data");
+export async function getPoliList(todayOnly?: boolean): Promise<PoliListResponse> {
+  const response = await api.get<PoliListResponse>("/v1/poli-data", {
+    params: todayOnly ? { today: 1 } : undefined,
+  });
   return response.data;
 }
 

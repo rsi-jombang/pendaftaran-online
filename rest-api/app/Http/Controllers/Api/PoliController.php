@@ -18,11 +18,13 @@ class PoliController extends BaseController
         ], 'null', Response::HTTP_OK);
     }
 
-    public function get_poli()
+    public function get_poli(Request $request)
     {
+        $todayOnly = $request->boolean('today');
+
         $polis_bpjs = DB::table('smis_rg_jadwal_poli')
             ->select(
-                'kodepoli_bpjs',
+                'kodepoli_bpjs as kode_poli',
                 'nama_poli',
                 'slug_poli',
 
@@ -60,23 +62,24 @@ class PoliController extends BaseController
             END AS status
         ")
             )
-
-            // HANYA JADWAL HARI INI
-            ->whereRaw('hari = WEEKDAY(CURDATE()) + 1')
-
+            ->when($todayOnly, function ($q) {
+                $q->whereRaw('hari = WEEKDAY(CURDATE()) + 1');
+            })
             ->groupBy(
-                'kodepoli_bpjs',
+                'kode_poli',
                 'nama_poli',
                 'slug_poli'
             )
-
             ->orderBy('nama_poli')
+            ->when($todayOnly, function ($q) {
+                $q->limit(6);
+            })
             ->get();
 
 
         $polis_non_bpjs = DB::table('smis_rg_jadwal_poli_non_bpjs')
             ->select(
-                'kode_poli',
+                'kode_poli as kode_poli',
                 'nama_poli',
                 'slug_poli',
 
@@ -114,26 +117,27 @@ class PoliController extends BaseController
             END AS status
         ")
             )
-
-            // HANYA JADWAL HARI INI
-            ->whereRaw('hari = WEEKDAY(CURDATE()) + 1')
-
+            ->when($todayOnly, function ($q) {
+                $q->whereRaw('hari = WEEKDAY(CURDATE()) + 1');
+            })
             ->groupBy(
                 'kode_poli',
                 'nama_poli',
                 'slug_poli'
             )
-
             ->orderBy('nama_poli')
+            ->when($todayOnly, function ($q) {
+                $q->limit(6);
+            })
             ->get();
 
         $polis = $polis_bpjs->merge($polis_non_bpjs);
 
         if ($polis->isEmpty()) {
-            return $this->error('Tidak ada data poli non BPJS yang tersedia hari ini.', Response::HTTP_NOT_FOUND);
+            return $this->error('Tidak ada data poli yang tersedia.', Response::HTTP_NOT_FOUND);
         }
 
-        return $this->success($polis, 'Data poli non BPJS yang tersedia hari ini.', Response::HTTP_OK);
+        return $this->success($polis, 'Data poli berhasil diambil.', Response::HTTP_OK);
     }
 
     public function get_poli_by_slug(string $slug_poli)

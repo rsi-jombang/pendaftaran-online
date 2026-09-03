@@ -106,12 +106,14 @@ export function RegistrationForm() {
 
     try {
       await submitMutation.mutateAsync({
-        patient_id: patient.id,
+        patient_id: Number(patient.id),
+        patient_nik: patient.nik,
         poli_id: pendingSelection.poliId,
         jadwal_id: pendingSelection.jadwalId,
         doctor_id: pendingSelection.doctorId,
         doctorName: pendingSelection.doctorName,
         poliName: pendingSelection.poliName,
+        kodePoli: pendingSelection.kodePoli,
         practiceHours: pendingSelection.practiceHours,
         date: formatDateForApi(pendingSelection.date),
         payment_method: data.payment_method,
@@ -157,6 +159,11 @@ export function RegistrationForm() {
         status: result.status,
         estimated_wait_minutes: result.estimated_wait_minutes,
         queue_position: result.queue_position,
+        is_bpjs: result.is_bpjs,
+        patient: result.patient,
+        poli: result.poli,
+        doctor: result.doctor,
+        schedule: result.schedule,
       });
       clearPendingSelection();
       navigate(`/status/${result.registration_id}`);

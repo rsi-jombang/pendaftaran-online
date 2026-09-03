@@ -103,6 +103,7 @@ export const mockPoliDetail: Record<string, PoliDetailResponse> = {
     data: {
       id: "poli_anak",
       slug_poli: "poli_anak",
+      kode_poli: "ANK",
       name: "Poli Anak",
       nama_poli: "Poli Anak",
       category: "Spesialis",
@@ -118,6 +119,7 @@ export const mockPoliDetail: Record<string, PoliDetailResponse> = {
     data: {
       id: "poli_bedah",
       slug_poli: "poli_bedah",
+      kode_poli: "BDH",
       name: "Poli Bedah Umum",
       nama_poli: "Poli Bedah Umum",
       category: "Spesialis",
@@ -133,6 +135,7 @@ export const mockPoliDetail: Record<string, PoliDetailResponse> = {
     data: {
       id: "poli_jantung",
       slug_poli: "poli_jantung",
+      kode_poli: "JNT",
       name: "Poli Jantung dan Pembuluh Darah",
       nama_poli: "Poli Jantung dan Pembuluh Darah",
       category: "Spesialis",

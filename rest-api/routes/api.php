@@ -17,6 +17,7 @@ Route::middleware(['throttle:api'])->group(function () {
     Route::prefix('v1')->group(function () {
         Route::middleware(['throttle:api-register'])->group(function () {
             Route::post('/patients', 'App\Http\Controllers\Api\PatientController@register');
+            Route::post('/registration', 'App\Http\Controllers\Api\RegistrationController@store');
         });
 
         Route::middleware(['throttle:api'])->group(function () {
@@ -36,6 +37,8 @@ Route::middleware(['throttle:api'])->group(function () {
             });
 
             Route::post('/patients/check-nik', 'App\Http\Controllers\Api\PatientController@checkNik');
+
+            Route::get('/registrations/{kdantrian}', 'App\Http\Controllers\Api\QueueStatusController@show');
         });
 
         // Route::middleware(['throttle:api-auth'])->group(function () {

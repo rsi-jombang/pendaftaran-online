@@ -63,7 +63,7 @@ export function PoliSection({ polis, isLoading, onSelect }: PoliSectionProps) {
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {polis.slice(0, 6).map((poli, index) => (
+                {polis.map((poli, index) => (
                   <motion.div key={poli.slug_poli} {...reveal(index * 0.06)}>
                     <button
                       onClick={() => onSelect(poli.slug_poli)}

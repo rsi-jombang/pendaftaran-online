@@ -1,11 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { getPoliList, getPoliDetail, getDoctorSchedule } from "./api";
 
+export function usePoliListToday() {
+  return useQuery({
+    queryKey: ["poli", "list", "today"],
+    queryFn: () => getPoliList(true),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function usePoliList() {
   return useQuery({
     queryKey: ["poli", "list"],
-    queryFn: getPoliList,
-    staleTime: 5 * 60 * 1000, // 5 menit - data poli jarang berubah
+    queryFn: () => getPoliList(),
+    staleTime: 5 * 60 * 1000,
   });
 }
 

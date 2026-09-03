@@ -1,41 +1,19 @@
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
 
 interface QueueNumberDisplayProps {
   queueNumber: string;
   status: "waiting" | "in_service" | "done";
-  estimatedWaitMinutes?: number;
 }
 
 export function QueueNumberDisplay({
   queueNumber,
   status,
-  estimatedWaitMinutes = 0,
 }: QueueNumberDisplayProps) {
-  // Countdown state
-  const [countdown, setCountdown] = useState(() => estimatedWaitMinutes * 60);
-
-  useEffect(() => {
-    if (status !== "waiting" || estimatedWaitMinutes <= 0) return;
-
-    setCountdown(estimatedWaitMinutes * 60);
-
-    const interval = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [status, estimatedWaitMinutes]);
-
-  const minutes = Math.floor(countdown / 60);
-  const seconds = countdown % 60;
-  const formattedCountdown = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
   const statusConfig = {
     waiting: {
       color: "var(--c-warning)",
       glow: "var(--c-warning)",
-      label: "Menunggu Panggilan",
+      label: "Pasien harap 60 menit lebih awal guna pencatatan administrasi.",
     },
     in_service: {
       color: "var(--c-secondary)",
@@ -155,7 +133,7 @@ export function QueueNumberDisplay({
         className="flex flex-col items-center gap-2"
       >
         <span
-          className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-small font-medium"
+          className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-center text-small font-medium"
           style={{
             backgroundColor: `color-mix(in srgb, ${config.color} 12%, transparent)`,
             color: config.color,
@@ -173,28 +151,6 @@ export function QueueNumberDisplay({
           )}
           {config.label}
         </span>
-
-        {/* Countdown for waiting status */}
-        {status === "waiting" && estimatedWaitMinutes > 0 && countdown > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="flex items-center gap-2 text-small"
-            style={{ color: "var(--c-text-muted)" }}
-          >
-            <span>Estimasi:</span>
-            <span
-              className="rounded-md px-2.5 py-1 font-mono font-medium tabular-nums"
-              style={{
-                backgroundColor: "var(--c-line)",
-                color: config.color,
-              }}
-            >
-              {formattedCountdown}
-            </span>
-          </motion.div>
-        )}
       </motion.div>
 
       <style>{`

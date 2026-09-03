@@ -4,24 +4,25 @@ import type { QueueStatusResponse } from "./types";
 
 export const mockQueueStatusWaiting: QueueStatusResponse = {
   data: {
-    registration_id: "REG-20260820-014",
-    queue_number: "A-014",
+    registration_id: "URO20260903RANDOM01",
+    queue_number: "URO-0001",
     status: "waiting",
     queue_position: 3,
-    estimated_wait_minutes: 20,
+    estimated_wait_minutes: null,
+    is_bpjs: false,
     patient: {
       name: "Siti Aminah",
       nik_masked: "35xxxxxxxxxx0001",
     },
     poli: {
-      name: "Poli Anak",
+      name: "Poli Urologi",
     },
     doctor: {
-      name: "dr. Sarah Wijaya, Sp.A",
+      name: "dr. Fakhri Surahmad, Sp.U",
     },
     schedule: {
-      date: "2026-08-20",
-      practice_hours: "09:00-12:00",
+      date: "2026-09-03",
+      practice_hours: "13:00-15:00",
     },
   },
 };
@@ -31,7 +32,6 @@ export const mockQueueStatusInService: QueueStatusResponse = {
     ...mockQueueStatusWaiting.data,
     status: "in_service",
     queue_position: 0,
-    estimated_wait_minutes: 0,
   },
 };
 
@@ -40,6 +40,5 @@ export const mockQueueStatusDone: QueueStatusResponse = {
     ...mockQueueStatusWaiting.data,
     status: "done",
     queue_position: 0,
-    estimated_wait_minutes: 0,
   },
 };

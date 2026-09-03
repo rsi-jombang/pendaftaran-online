@@ -42,10 +42,11 @@ export function RegistrationStatusPage() {
         status: registrationResult.status,
         queue_position: registrationResult.queue_position,
         estimated_wait_minutes: registrationResult.estimated_wait_minutes,
-        patient: { name: "", nik_masked: "" },
-        poli: { name: "" },
-        doctor: { name: "" },
-        schedule: { date: "", practice_hours: "" },
+        is_bpjs: registrationResult.is_bpjs,
+        patient: registrationResult.patient,
+        poli: registrationResult.poli,
+        doctor: registrationResult.doctor,
+        schedule: registrationResult.schedule,
       }
     : null;
 
@@ -244,7 +245,6 @@ export function RegistrationStatusPage() {
                 <QueueNumberDisplay
                   queueNumber={displayData.queue_number}
                   status={displayData.status}
-                  estimatedWaitMinutes={displayData.estimated_wait_minutes}
                 />
               </div>
             </motion.div>

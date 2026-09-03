@@ -3,7 +3,8 @@ export interface RegistrationStatus {
   queue_number: string;
   status: "waiting" | "in_service" | "done";
   queue_position: number;
-  estimated_wait_minutes: number;
+  estimated_wait_minutes: number | null;
+  is_bpjs: boolean;
   patient: {
     name: string;
     nik_masked: string;

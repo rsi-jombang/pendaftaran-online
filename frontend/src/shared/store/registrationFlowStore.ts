@@ -34,12 +34,18 @@ export interface RegistrationResult {
   registration_id: string;
   queue_number: string;
   status: "waiting" | "in_service" | "done";
-  estimated_wait_minutes: number;
+  estimated_wait_minutes: number | null;
+  is_bpjs: boolean;
   queue_position: number;
+  patient: { name: string; nik_masked: string };
+  poli: { name: string };
+  doctor: { name: string };
+  schedule: { date: string; practice_hours: string };
 }
 
 export interface PendingSelection {
   poliId: string;
+  kodePoli: string;
   poliName: string;
   jadwalId: number;
   doctorId: string;
