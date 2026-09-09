@@ -121,6 +121,11 @@ class RegistrationPoliBpjs
                 $antrian->response_code = 200;
                 $antrian->response_message = 'Ok';
                 $antrian->save();
+                try {
+                    $wa = app(\App\Services\WhatsappService::class);
+                    $phone = $pasien->telpon ?? $data['responsible_phone'] ?? null;
+                    if ($phone) $wa->send($phone, $wa->buildMessage($data, $antrian->kodebooking, $antrian->nomorantrean));
+                } catch (\Throwable $e) {}
                 $nikRaw = $data['patient_nik'];
                 $nikMasked = substr($nikRaw, 0, 2) . str_repeat('x', 10) . substr($nikRaw, -4);
                 return [

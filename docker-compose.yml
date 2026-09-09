@@ -1,0 +1,12 @@
+services:
+  wa-blas:
+    build: ./wa-blas
+    container_name: wa-blas
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./wa-blas/.wwebjs_auth:/app/.wwebjs_auth
+      - ./wa-blas/.wwebjs_cache:/app/.wwebjs_cache
+    env_file:
+      - ./wa-blas/.env
+    restart: unless-stopped

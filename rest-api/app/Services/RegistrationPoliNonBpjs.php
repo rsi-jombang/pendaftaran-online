@@ -41,6 +41,17 @@ class RegistrationPoliNonBpjs
         $antrian->id_vaksin = $data['id_vaksin'] ?? null;
         $antrian->save();
 
+        // WA fire-and-forget (tidak gagalkan registrasi)
+        try {
+            $wa = app(WhatsappService::class);
+            $phone = $patient->telpon ?? $data['responsible_phone'] ?? null;
+            if ($phone) {
+                $wa->send($phone, $wa->buildMessage($data, $antrian->kdantrian, $antrian->nomorantrean));
+            }
+        } catch (\Throwable $e) {
+            // silent
+        }
+
         return [
             'success' => true,
             'message' => 'Pendaftaran berhasil',

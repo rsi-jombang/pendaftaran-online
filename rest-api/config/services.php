@@ -30,4 +30,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'wa' => [
+        'url' => env('WA_GATEWAY_URL', 'http://localhost:3001'),
+        'key' => env('WA_API_KEY', ''),
+        'enabled' => env('WA_ENABLED', true),
+    ],
+
 ];
