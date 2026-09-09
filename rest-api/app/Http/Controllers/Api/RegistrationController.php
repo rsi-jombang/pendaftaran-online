@@ -31,14 +31,12 @@ class RegistrationController extends Controller
             'responsible_phone' => 'nullable|string',
         ]);
 
-        $cekJenisPoliNonBpjs = DB::table('smis_rg_jadwal_poli_non_bpjs')->find($validatedData['jadwal_id']);
+        $cekJenisPoliNonBpjs = DB::table('smis_rg_jadwal_poli_non_bpjs')->where('slug_poli',$validatedData['poli_id'])->first();
 
         if (!$cekJenisPoliNonBpjs) {
-            $regBpjs = new RegistrationPoliBpjs();
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid schedule ID',
-            ], 422);
+            $regBpjs = new RegistrationPoliBpjs($validatedData);
+            $result = $regBpjs->register($validatedData);
+            return response()->json($result, 201);
         }
 
         $regNonBpjs = new RegistrationPoliNonBpjs();
