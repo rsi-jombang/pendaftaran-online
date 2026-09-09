@@ -1,0 +1,43 @@
+@base_url = http://localhost:8000/api/v1
+@slug_poli = poli_mata
+
+
+### list poli
+GET {{base_url}}/poli-data
+Content-Type: application/json
+
+### master vaksin
+GET {{base_url}}/master/vaksin
+Content-Type: application/json
+
+### check nik
+POST {{base_url}}/patients/check-nik
+Content-Type: application/json
+
+{"nik": "3578012345670001"}
+
+
+### cek jadwal poli
+GET {{base_url}}/poli/{{slug_poli}}/schedules?date=2026-09-07
+Content-Type: application/json
+
+
+### Registration
+POST {{base_url}}/registration
+Content-Type: application/json
+
+{
+    "patient_id": 153125,
+    "patient_nik": "3578012345670001",
+    "jadwal_id": 1,
+    "poli_id": "poli_mata",
+    "kodePoli": "MAT",
+    "doctor_id": "11",
+    "doctorName": "dr. H. M. Sjarifudhin, Sp. M., M.M.R",
+    "poliName": "Poli Mata",
+    "practiceHours": "16:00 - 19:00",
+    "date": "2026-09-07",
+    "payment_method": "umum",
+    "responsible_name": "John Doe",
+    "responsible_phone": "081234567890"
+}

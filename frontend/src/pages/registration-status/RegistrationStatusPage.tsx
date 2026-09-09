@@ -1,11 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Download, Share2, RefreshCw, Home, AlertTriangle } from "lucide-react";
-import { StepIndicator, Button, Skeleton } from "../../shared/components/ui";
+import { motion } from "framer-motion";
+import { Download, Share2, Home } from "lucide-react";
+import { StepIndicator, Button } from "../../shared/components/ui";
 import { ErrorState } from "../../shared/components/feedback";
 import { QueueNumberDisplay } from "./components/QueueNumberDisplay";
 import { PatientSummaryCard } from "./components/PatientSummaryCard";
-import { useQueueStatus } from "../../features/queue";
 import { useRegistrationFlowStore } from "../../shared/store/registrationFlowStore";
 import type { RegistrationStatus } from "../../features/queue/types";
 
@@ -34,7 +33,7 @@ export function RegistrationStatusPage() {
   const { registrationId } = useParams<{ registrationId: string }>();
   const { registrationResult, reset } = useRegistrationFlowStore();
 
-  // Initial data: Zustand → sessionStorage → null
+  // Data statis: Zustand → sessionStorage
   const zustandData: RegistrationStatus | null = registrationResult
     ? {
         registration_id: registrationResult.registration_id,
@@ -51,35 +50,17 @@ export function RegistrationStatusPage() {
     : null;
 
   const sessionData = loadFromSessionStorage();
-  const initialData = zustandData || sessionData;
+  const displayData = zustandData || sessionData;
 
-  // Fetch from API for polling and refresh-safe
-  const {
-    data: queueData,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isFetching,
-  } = useQueueStatus(registrationId || null);
-
-  // Merge: API data > initial data (Zustand / sessionStorage)
-  const displayData = queueData?.data || initialData;
-  const isInitialLoading = isLoading && !initialData;
-
-  // Save API data to sessionStorage for refresh safety
-  if (queueData?.data) {
-    saveToSessionStorage(queueData.data);
+  // Simpan ke sessionStorage untuk refresh safety (hanya dari Zustand)
+  if (zustandData) {
+    saveToSessionStorage(zustandData);
   }
 
   const handleBackHome = () => {
     reset();
     sessionStorage.removeItem(STORAGE_KEY);
     navigate("/");
-  };
-
-  const handleRetry = () => {
-    refetch();
   };
 
   const handlePrint = () => {
@@ -122,6 +103,19 @@ export function RegistrationStatusPage() {
 
   const statusGlow = displayData ? statusGlowMap[displayData.status] : "var(--c-primary)";
 
+  // Tanpa data sama sekali → error
+  if (!displayData) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-6" style={{ backgroundColor: "var(--c-bg)" }}>
+        <ErrorState
+          message="Data pendaftaran tidak ditemukan. Silakan daftar ulang."
+          onRetry={() => navigate("/")}
+          retryLabel="Kembali ke Beranda"
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className="relative min-h-screen px-6 py-12"
@@ -160,121 +154,56 @@ export function RegistrationStatusPage() {
           </p>
         </motion.div>
 
-        {/* Loading State (only when no fallback data) */}
-        {isInitialLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6"
-          >
-            <Skeleton variant="card" height={300} />
-            <Skeleton variant="card" height={200} />
-          </motion.div>
-        )}
-
-        {/* Error State (only when no fallback data at all) */}
-        {isError && !displayData && (
-          <ErrorState
-            message={error?.message || "Gagal memuat status pendaftaran"}
-            onRetry={handleRetry}
-            retryLabel="Coba Lagi"
-          />
-        )}
-
         {/* Content */}
-        {displayData && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="space-y-6"
+        >
+          {/* Hero Status Card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className="space-y-6"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", stiffness: 180, damping: 20, delay: 0.1 }}
+            className="no-print:overflow-hidden no-print:rounded-card no-print:border"
+            style={{
+              backgroundColor: "var(--c-surface)",
+              borderColor: "var(--c-border)",
+            }}
           >
-            {/* Polling error warning (show stale data, not error page) */}
-            <AnimatePresence>
-              {isError && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 rounded-card border px-4 py-3 text-small"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, var(--c-warning) 8%, transparent)",
-                    borderColor: "color-mix(in srgb, var(--c-warning) 20%, transparent)",
-                    color: "var(--c-warning)",
-                  }}
-                >
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                  <span>Gagal memperbarui data. Menampilkan data terakhir.</span>
-                  <button
-                    onClick={handleRetry}
-                    className="ml-auto shrink-0 font-medium underline hover:no-underline"
-                  >
-                    Coba lagi
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Hero Status Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", stiffness: 180, damping: 20, delay: 0.1 }}
-              className="no-print:overflow-hidden no-print:rounded-card no-print:border"
+            {/* Gradient header bar */}
+            <div
+              className="px-6 py-3 text-center"
               style={{
-                backgroundColor: "var(--c-surface)",
-                borderColor: "var(--c-border)",
+                background: `linear-gradient(135deg, color-mix(in srgb, ${statusGlow} 80%, var(--c-primary-dark)), ${statusGlow})`,
               }}
             >
-              {/* Gradient header bar */}
-              <div
-                className="px-6 py-3 text-center"
-                style={{
-                  background: `linear-gradient(135deg, color-mix(in srgb, ${statusGlow} 80%, var(--c-primary-dark)), ${statusGlow})`,
-                }}
-              >
-                <p className="text-small font-semibold text-white">
-                  {displayData.status === "done"
-                    ? "Pendaftaran Selesai!"
-                    : "Pendaftaran Berhasil!"}
-                </p>
-              </div>
+              <p className="text-small font-semibold text-white">
+                {displayData.status === "done"
+                  ? "Pendaftaran Selesai!"
+                  : "Pendaftaran Berhasil!"}
+              </p>
+            </div>
 
-              {/* Queue display */}
-              <div className="px-6 py-8">
-                <QueueNumberDisplay
-                  queueNumber={displayData.queue_number}
-                  status={displayData.status}
-                />
-              </div>
-            </motion.div>
-
-            {/* Patient Summary Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
-            >
-              <PatientSummaryCard data={displayData} />
-            </motion.div>
-
-            {/* Polling Indicator */}
-            <AnimatePresence>
-              {isFetching && !isError && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="no-print:flex no-print:items-center no-print:justify-center no-print:gap-1.5 no-print:text-center no-print:text-xs"
-                  style={{ color: "var(--c-text-muted)" }}
-                >
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" style={{ color: "var(--c-primary)" }} />
-                  <span>Memperbarui posisi antrian...</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Queue display */}
+            <div className="px-6 py-8">
+              <QueueNumberDisplay
+                queueNumber={displayData.queue_number}
+                status={displayData.status}
+              />
+            </div>
           </motion.div>
-        )}
+
+          {/* Patient Summary Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
+          >
+            <PatientSummaryCard data={displayData} />
+          </motion.div>
+        </motion.div>
 
         {/* Action Buttons */}
         <motion.div

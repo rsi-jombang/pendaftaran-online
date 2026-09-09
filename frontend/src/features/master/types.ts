@@ -32,3 +32,13 @@ export interface MasterPerusahaanResponse {
   data: MasterPerusahaanItem[];
   message?: string;
 }
+
+export interface MasterVaksinItem {
+  id: string;
+  nama: string;
+}
+
+export interface MasterVaksinResponse {
+  data: MasterVaksinItem[];
+  message?: string;
+}

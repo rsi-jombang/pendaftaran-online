@@ -151,4 +151,16 @@ class MasterController extends BaseController
 
         return $this->success($items, 'Data perusahaan berhasil diambil.', Response::HTTP_OK);
     }
+
+    public function vaksin()
+    {
+        $items = DB::table('smis_mjm_tarif_umum')
+            ->select('id as id', DB::raw('TRIM(nama) as nama'))
+            ->whereNotNull('nama')
+            ->where('prop', '!=', 'del')
+            ->orderBy('nama')
+            ->get();
+
+        return $this->success($items, 'Data vaksin berhasil diambil.', Response::HTTP_OK);
+    }
 }

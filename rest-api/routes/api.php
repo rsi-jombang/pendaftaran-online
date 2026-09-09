@@ -34,6 +34,7 @@ Route::middleware(['throttle:api'])->group(function () {
                 Route::get('/master/kelurahan', 'kelurahan');
                 Route::get('/master/asuransi', 'asuransi');
                 Route::get('/master/perusahaan', 'perusahaan');
+                Route::get('/master/vaksin', 'vaksin');
             });
 
             Route::post('/patients/check-nik', 'App\Http\Controllers\Api\PatientController@checkNik');

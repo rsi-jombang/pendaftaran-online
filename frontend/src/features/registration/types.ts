@@ -14,6 +14,7 @@ export interface RegistrationPayload {
   company_id?: string;
   responsible_name?: string;
   responsible_phone?: string;
+  id_vaksin?: string;
 }
 
 export interface RegistrationResult {

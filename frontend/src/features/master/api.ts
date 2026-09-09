@@ -1,5 +1,5 @@
 import { api } from "../../shared/lib/axios";
-import type { MasterRegionResponse, MasterAsuransiResponse, MasterPerusahaanResponse } from "./types";
+import type { MasterRegionResponse, MasterAsuransiResponse, MasterPerusahaanResponse, MasterVaksinResponse } from "./types";
 
 export async function getProvinsi(): Promise<MasterRegionResponse> {
   const response = await api.get<MasterRegionResponse>("/v1/master/provinsi");
@@ -37,5 +37,10 @@ export async function getAsuransi(): Promise<MasterAsuransiResponse> {
 
 export async function getPerusahaan(): Promise<MasterPerusahaanResponse> {
   const response = await api.get<MasterPerusahaanResponse>("/v1/master/perusahaan");
+  return response.data;
+}
+
+export async function getVaksin(): Promise<MasterVaksinResponse> {
+  const response = await api.get<MasterVaksinResponse>("/v1/master/vaksin");
   return response.data;
 }

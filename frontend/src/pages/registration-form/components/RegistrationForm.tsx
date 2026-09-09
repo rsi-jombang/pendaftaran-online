@@ -11,8 +11,8 @@ import { Button } from "../../../shared/components/ui/Button";
 import { ErrorState } from "../../../shared/components/feedback/ErrorState";
 import { useSubmitRegistration } from "../../../features/registration/hooks";
 import { useRegistrationFlowStore } from "../../../shared/store/registrationFlowStore";
-import { useAsuransi, usePerusahaan } from "../../../features/master";
-import { User, CreditCard, Phone, AlertCircle, UserCheck } from "lucide-react";
+import { useAsuransi, usePerusahaan, useVaksin } from "../../../features/master";
+import { User, CreditCard, Phone, AlertCircle, UserCheck, Syringe } from "lucide-react";
 
 const registrationSchema = z.object({
   patient_name: z.string().min(1, "Nama pasien wajib diisi"),
@@ -23,6 +23,7 @@ const registrationSchema = z.object({
   company_id: z.string().optional(),
   responsible_name: z.string().optional(),
   responsible_phone: z.string().optional(),
+  id_vaksin: z.string().optional(),
   consent: z.boolean().refine((val) => val === true, {
     message: "Wajib menyetujui persetujuan data",
   }),
@@ -49,8 +50,11 @@ export function RegistrationForm() {
 
   const submitMutation = useSubmitRegistration();
 
+  const isVaksinPoli = pendingSelection?.poliId === "poli_vaksin";
+
   const asuransiQuery = useAsuransi();
   const perusahaanQuery = usePerusahaan();
+  const vaksinQuery = useVaksin(isVaksinPoli);
 
   const {
     register,
@@ -93,6 +97,13 @@ export function RegistrationForm() {
     }
   }, [watchedPaymentMethod, setValue]);
 
+  // Reset id_vaksin when not vaksin poli
+  useEffect(() => {
+    if (!isVaksinPoli) {
+      setValue("id_vaksin", "", { shouldValidate: true });
+    }
+  }, [isVaksinPoli, setValue]);
+
   const formatDateForApi = (dateStr: string): string => {
     return dateStr; // already in ISO format from pendingSelection
   };
@@ -103,6 +114,11 @@ export function RegistrationForm() {
     clearErrors();
 
     if (!patient || !pendingSelection) return;
+
+    if (isVaksinPoli && !data.id_vaksin) {
+      setError("id_vaksin", { type: "manual", message: "Jenis vaksin wajib dipilih untuk Poli Vaksin." });
+      return;
+    }
 
     try {
       await submitMutation.mutateAsync({
@@ -121,9 +137,10 @@ export function RegistrationForm() {
         company_id: data.company_id || undefined,
         responsible_name: data.responsible_name || undefined,
         responsible_phone: data.responsible_phone || undefined,
+        id_vaksin: isVaksinPoli ? data.id_vaksin || undefined : undefined,
       });
     } catch (err: any) {
-      if (err.errors) {
+      if (err.errors && Object.keys(err.errors).length > 0) {
         Object.entries(err.errors).forEach(([field, messages]) => {
           const message = Array.isArray(messages) ? messages[0] : messages;
           const fieldMap: Record<string, string> = {
@@ -136,12 +153,32 @@ export function RegistrationForm() {
             company_id: "company_id",
             responsible_name: "responsible_name",
             responsible_phone: "responsible_phone",
+            id_vaksin: "id_vaksin",
+            general: "patient_name",
           };
           const formField = fieldMap[field] || field;
-          setError(formField as keyof RegistrationFormData, {
-            type: "server",
-            message: String(message),
-          });
+          // general tetap tampil di banner, plus set ke patient_name biar highlight
+          if (field === "general" && !("patient_name" in (err.errors as object))) {
+            // jangan timpa jika sudah ada error spesifik
+          }
+          try {
+            setError(formField as keyof RegistrationFormData, {
+              type: "server",
+              message: String(message),
+            });
+          } catch {
+            // field tidak ada di form (general) — biarkan banner yang tampil
+          }
+        });
+        // pastikan banner validasi tetap render (errors general sudah cukup)
+        if (err.errors?.general) {
+          // re-throw tidak perlu, banner sudah handle via isValidationError
+        }
+      } else if (err.message) {
+        // fallback: error tanpa errors map (mis. post_bpjs gagal)
+        setError("patient_name" as keyof RegistrationFormData, {
+          type: "server",
+          message: String(err.message),
         });
       } else {
         throw err;
@@ -149,7 +186,7 @@ export function RegistrationForm() {
     }
   };
 
-  // Handle successful submission (mutation onSuccess)
+  // Handle successful submission — auto-redirect ke status
   useEffect(() => {
     if (submitMutation.isSuccess && submitMutation.data?.data) {
       const result = submitMutation.data.data;
@@ -178,7 +215,12 @@ export function RegistrationForm() {
 
   // Show ErrorState for network/500 errors
   const showErrorState =
-    submitMutation.isError && !submitMutation.error?.message?.includes("validation");
+    submitMutation.isError && !submitMutation.error?.message?.toLowerCase().includes("validation");
+
+  const isValidationError =
+    submitMutation.isError &&
+    (submitMutation.error as any)?.errors &&
+    Object.keys((submitMutation.error as any).errors).length > 0;
 
   return (
     <motion.div
@@ -224,10 +266,33 @@ export function RegistrationForm() {
           </div>
         ) : (
           <div className="p-6">
+            {/* Banner validasi — fallback jika fieldMap miss */}
+            {isValidationError && (
+              <div
+                className="mb-6 rounded-card border p-4"
+                style={{
+                  backgroundColor: "color-mix(in srgb, var(--c-danger) 8%, transparent)",
+                  borderColor: "color-mix(in srgb, var(--c-danger) 20%, transparent)",
+                }}
+              >
+                <p className="flex items-center gap-2 text-small font-semibold" style={{ color: "var(--c-danger)" }}>
+                  <AlertCircle className="h-4 w-4" />
+                  {(submitMutation.error as any)?.message || "Validasi gagal"}
+                </p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-small" style={{ color: "var(--c-danger)" }}>
+                  {Object.entries((submitMutation.error as any).errors as Record<string, string[]>).map(([field, msgs]) => (
+                    <li key={field}>
+                      <span className="font-medium">{field}:</span> {Array.isArray(msgs) ? msgs.join(", ") : String(msgs)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {showErrorState && (
               <ErrorState
                 message={
-                  submitMutation.error?.message ||
+                  (submitMutation.error as any)?.message ||
                   "Terjadi kesalahan jaringan. Silakan coba lagi."
                 }
                 onRetry={() => submitMutation.reset()}
@@ -298,6 +363,21 @@ export function RegistrationForm() {
                   </p>
                 )}
               </div>
+
+              {/* Jenis Vaksin (hanya poli_vaksin) */}
+              {isVaksinPoli && (
+                <SearchableSelect
+                  label="Jenis Vaksin"
+                  options={(vaksinQuery.data?.data ?? []).map((item) => ({ value: String(item.id), label: item.nama }))}
+                  value={watch("id_vaksin") || ""}
+                  onChange={(value) => setValue("id_vaksin", value, { shouldValidate: true })}
+                  loading={vaksinQuery.isLoading}
+                  placeholder="Pilih jenis vaksin"
+                  searchPlaceholder="Cari vaksin..."
+                  error={errors.id_vaksin?.message}
+                  leadingIcon={<Syringe className="h-4 w-4" />}
+                />
+              )}
 
               {/* Asuransi & Perusahaan (conditional) */}
               {watchedPaymentMethod !== "umum" && (

@@ -38,6 +38,7 @@ class RegistrationPoliNonBpjs
         $antrian->namapj = $data['responsible_name'] ?? '';
         $antrian->telppj = $data['responsible_phone'] ?? '';
         $antrian->kedatangan = 'Datang Sendiri';
+        $antrian->id_vaksin = $data['id_vaksin'] ?? null;
         $antrian->save();
 
         return [

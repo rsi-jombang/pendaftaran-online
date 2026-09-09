@@ -15,7 +15,7 @@ class RegistrationPoliBpjs
     {
         $valid = $this->valid($data);
         if ($valid['success'] !== true) {
-            return $valid['message'];
+            return $valid;
         }
 
         $poli = $data['kodePoli'];
@@ -29,18 +29,22 @@ class RegistrationPoliBpjs
 
         if (isset($pasien->nik)) {
             if ($pasien->origin_updated != 'verified') {
+                $msg = 'No. rekam medis anda ' . $pasien['nrm'] . ' tersebut hanya bersifat sementara. Harap datang ke admisi untuk verifikasi & melengkapi data rekam medis dengan membawa kartu identitas, pastikan data anda benar-benar valid & belum pernah terdaftar di RSUD SLG';
                 return [
-                    'status' => false,
-                    'message' => 'No. rekam medis anda ' . $pasien['nrm'] . ' tersebut hanya bersifat sementara. Harap datang ke admisi untuk verifikasi & melengkapi data rekam medis dengan membawa kartu identitas, pastikan data anda benar-benar valid & belum pernah terdaftar di RSUD SLG',
-                    'code' => 201
+                    'success' => false,
+                    'message' => $msg,
+                    'data' => null,
+                    'errors' => ['general' => [$msg]],
                 ];
             }
         } else {
             if ($pasien->origin_updated == 'mobile-jkn') {
+                $msg = 'No. rekam medis anda ' . $pasien['id'] . ' tersebut hanya bersifat sementara. Harap datang ke admisi untuk verifikasi & melengkapi data rekam medis dengan membawa kartu identitas, pastikan data anda benar-benar valid & belum pernah terdaftar di RSUD SLG';
                 return [
-                    'status' => false,
-                    'message' => 'No. rekam medis anda ' . $pasien['id'] . ' tersebut hanya bersifat sementara. Harap datang ke admisi untuk verifikasi & melengkapi data rekam medis dengan membawa kartu identitas, pastikan data anda benar-benar valid & belum pernah terdaftar di RSUD SLG',
-                    'code' => 201
+                    'success' => false,
+                    'message' => $msg,
+                    'data' => null,
+                    'errors' => ['general' => [$msg]],
                 ];
             }
         }
@@ -117,26 +121,44 @@ class RegistrationPoliBpjs
                 $antrian->response_code = 200;
                 $antrian->response_message = 'Ok';
                 $antrian->save();
-                $ktp = $pasien->nik ? $pasien->nik : $pasien->ktp;
+                $nikRaw = $data['patient_nik'];
+                $nikMasked = substr($nikRaw, 0, 2) . str_repeat('x', 10) . substr($nikRaw, -4);
                 return [
-                    'status' => true,
-                    'message' => 'Ok',
-                    'pasien' => $pasien,
-                    'antrian' => $antrian,
-                    'code' => 200,
+                    'success' => true,
+                    'message' => 'Pendaftaran berhasil',
+                    'data' => [
+                        'registration_id' => $antrian->kodebooking,
+                        'queue_number' => $antrian->nomorantrean,
+                        'status' => 'waiting',
+                        'queue_position' => (int) $antrian->angkaantrean,
+                        'estimated_wait_minutes' => null,
+                        'is_bpjs' => true,
+                        'patient' => [
+                            'name' => $pasien->nama ?? $pasien->name ?? '',
+                            'nik_masked' => $nikMasked,
+                        ],
+                        'poli' => ['name' => $jadwal['nama_poli']],
+                        'doctor' => ['name' => $jadwal['nama_dokter']],
+                        'schedule' => [
+                            'date' => $antrian->tanggalperiksa,
+                            'practice_hours' => $jadwal['jam_mulai'] . '-' . $jadwal['jam_selesai'],
+                        ],
+                    ],
                 ];
             } else {
                 return [
-                    'status' => false,
+                    'success' => false,
                     'message' => $response['message'],
-                    'code' => 201,
+                    'data' => null,
+                    'errors' => ['general' => [$response['message']]],
                 ];
             }
         } else {
             return [
-                'status' => false,
+                'success' => false,
                 'message' => $response['message'],
-                'code' => 201
+                'data' => null,
+                'errors' => ['general' => [$response['message']]],
             ];
         }
     }
@@ -156,7 +178,7 @@ class RegistrationPoliBpjs
                 'success' => false,
                 'message' => "Poli tidak ditemukan",
                 'data' => null,
-                'errors' => null,
+                'errors' => ['general' => ["Poli tidak ditemukan"]],
             ];
         }
 
@@ -180,7 +202,7 @@ class RegistrationPoliBpjs
                 'success' => false,
                 'message' => "Tanggal periksa yang dimasukkan telah berlalu",
                 'data' => null,
-                'errors' => null,
+                'errors' => ['general' => ["Tanggal periksa yang dimasukkan telah berlalu"]],
             ];
         }
 
@@ -191,7 +213,7 @@ class RegistrationPoliBpjs
                 'success' => false,
                 'message' => "Format jam praktik salah, gunakan format HH:MM-HH:MM",
                 'data' => null,
-                'errors' => null,
+                'errors' => ['general' => ["Format jam praktik salah, gunakan format HH:MM-HH:MM"]],
             ];
         }
 
@@ -202,7 +224,7 @@ class RegistrationPoliBpjs
                 'success' => false,
                 'message' => "Pendaftaran ke poli ini telah ditutup karena jam praktik telah berakhir",
                 'data' => null,
-                'errors' => null,
+                'errors' => ['general' => ["Pendaftaran ke poli ini telah ditutup karena jam praktik telah berakhir"]],
             ];
         }
 
@@ -216,7 +238,7 @@ class RegistrationPoliBpjs
                 'success' => false,
                 'message' => "Jadwal poli tidak ditemukan",
                 'data' => null,
-                'errors' => null,
+                'errors' => ['general' => ["Jadwal poli tidak ditemukan"]],
             ];
         }
 
@@ -225,7 +247,7 @@ class RegistrationPoliBpjs
                 'success' => false,
                 'message' => "Jadwal poli ini sedang libur, silahkan reschedule di jam praktek lainnya.",
                 'data' => null,
-                'errors' => null,
+                'errors' => ['general' => ["Jadwal poli ini sedang libur, silahkan reschedule di jam praktek lainnya."]],
             ];
         }
 
@@ -239,7 +261,7 @@ class RegistrationPoliBpjs
                 'success' => false,
                 'message' => "Data Pasien tidak ditemukan, silahkan daftar baru.",
                 'data' => null,
-                'errors' => null,
+                'errors' => ['general' => ["Data Pasien tidak ditemukan, silahkan daftar baru."]],
             ];
         }
 
@@ -258,7 +280,7 @@ class RegistrationPoliBpjs
                 'success' => false,
                 'message' => "Kuota pendaftaran poli ini telah penuh, silahkan reschedule di jam praktek lainnya.",
                 'data' => null,
-                'errors' => null,
+                'errors' => ['general' => ["Kuota pendaftaran poli ini telah penuh, silahkan reschedule di jam praktek lainnya."]],
             ];
         } else {
             $sisakuotanonjkn = $sisakuotanonjkn - 1;
@@ -271,7 +293,7 @@ class RegistrationPoliBpjs
                 'success' => false,
                 'message' => "Pasien ini sudah terdaftar di jadwal poli ini, silahkan reschedule di jam praktek lainnya.",
                 'data' => null,
-                'errors' => null,
+                'errors' => ['general' => ["Pasien ini sudah terdaftar di jadwal poli ini, silahkan reschedule di jam praktek lainnya."]],
             ];
         }
         // jika validasi sudah benar
