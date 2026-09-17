@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Download, Share2, Home } from "lucide-react";
@@ -53,9 +54,22 @@ export function RegistrationStatusPage() {
   const displayData = zustandData || sessionData;
 
   // Simpan ke sessionStorage untuk refresh safety (hanya dari Zustand)
-  if (zustandData) {
-    saveToSessionStorage(zustandData);
-  }
+  useEffect(() => {
+    if (registrationResult) {
+      saveToSessionStorage({
+        registration_id: registrationResult.registration_id,
+        queue_number: registrationResult.queue_number,
+        status: registrationResult.status,
+        queue_position: registrationResult.queue_position,
+        estimated_wait_minutes: registrationResult.estimated_wait_minutes,
+        is_bpjs: registrationResult.is_bpjs,
+        patient: registrationResult.patient,
+        poli: registrationResult.poli,
+        doctor: registrationResult.doctor,
+        schedule: registrationResult.schedule,
+      });
+    }
+  }, [registrationResult]);
 
   const handleBackHome = () => {
     reset();

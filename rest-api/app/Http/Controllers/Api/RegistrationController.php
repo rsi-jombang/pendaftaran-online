@@ -43,7 +43,7 @@ class RegistrationController extends Controller
         $cekJenisPoliNonBpjs = DB::table('smis_rg_jadwal_poli_non_bpjs')->where('slug_poli',$validatedData['poli_id'])->first();
 
         if (!$cekJenisPoliNonBpjs) {
-            $regBpjs = new RegistrationPoliBpjs($validatedData);
+            $regBpjs = new RegistrationPoliBpjs();
             $result = $regBpjs->register($validatedData);
             // Opsi A: inline error — kembalikan 422 agar axios masuk catch
             if (($result['success'] ?? null) === false || ($result['status'] ?? null) === false) {

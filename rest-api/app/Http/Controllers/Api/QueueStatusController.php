@@ -14,6 +14,16 @@ class QueueStatusController extends Controller
             ->where('kdantrian', $kdantrian)
             ->first();
 
+        $isBpjs = false;
+        $practiceHours = '';
+
+        if (!$antrian) {
+            $antrian = DB::table('antrians')
+                ->where('kodebooking', $kdantrian)
+                ->first();
+            $isBpjs = true;
+        }
+
         if (!$antrian) {
             return response()->json([
                 'success' => false,
@@ -21,11 +31,26 @@ class QueueStatusController extends Controller
             ], 404);
         }
 
-        $queuePosition = DB::table('antrians_non_bpjs')
-            ->where('jadwal_id', $antrian->jadwal_id)
-            ->whereDate('tanggalperiksa', $antrian->tanggalperiksa)
-            ->where('angkaantrean', '<', $antrian->angkaantrean)
-            ->count();
+        if ($isBpjs) {
+            $queuePosition = DB::table('antrians')
+                ->where('jadwal_id', $antrian->jadwal_id)
+                ->whereDate('tanggalperiksa', $antrian->tanggalperiksa)
+                ->where('angkaantrean', '<', $antrian->angkaantrean)
+                ->count();
+
+            $jadwal = DB::table('smis_rg_jadwal_poli')
+                ->where('id', $antrian->jadwal_id)
+                ->first();
+            if ($jadwal) {
+                $practiceHours = $jadwal->jam_mulai . '-' . $jadwal->jam_selesai;
+            }
+        } else {
+            $queuePosition = DB::table('antrians_non_bpjs')
+                ->where('jadwal_id', $antrian->jadwal_id)
+                ->whereDate('tanggalperiksa', $antrian->tanggalperiksa)
+                ->where('angkaantrean', '<', $antrian->angkaantrean)
+                ->count();
+        }
 
         $patient = DB::table('smis_rg_patient')
             ->where('id', $antrian->norm)
@@ -40,12 +65,12 @@ class QueueStatusController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'registration_id' => $antrian->kdantrian,
+                'registration_id' => $kdantrian,
                 'queue_number' => $antrian->nomorantrean,
                 'status' => 'waiting',
                 'queue_position' => $queuePosition,
                 'estimated_wait_minutes' => null,
-                'is_bpjs' => false,
+                'is_bpjs' => $isBpjs,
                 'patient' => [
                     'name' => $patient->nama ?? '',
                     'nik_masked' => $nikMasked,
@@ -54,7 +79,7 @@ class QueueStatusController extends Controller
                 'doctor' => ['name' => $antrian->namadokter],
                 'schedule' => [
                     'date' => $antrian->tanggalperiksa,
-                    'practice_hours' => '',
+                    'practice_hours' => $practiceHours,
                 ],
             ],
         ]);

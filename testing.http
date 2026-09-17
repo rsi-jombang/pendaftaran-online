@@ -22,6 +22,24 @@ GET {{base_url}}/poli/{{slug_poli}}/schedules?date=2026-09-07
 Content-Type: application/json
 
 
+### WA gateway — status & QR
+GET http://localhost:3001/status
+Content-Type: application/json
+
+### WA gateway — QR image
+GET http://localhost:3001/qr-image
+Content-Type: application/json
+
+### WA gateway — send test (header X-API-KEY harus sama dengan WA_API_KEY)
+POST http://localhost:3001/send
+Content-Type: application/json
+X-API-KEY: changeme
+
+{
+    "to": "082140300286",
+    "message": "Test WA gateway — delay 3s"
+}
+
 ### Registration
 POST {{base_url}}/registration
 Content-Type: application/json
@@ -32,7 +50,7 @@ Content-Type: application/json
     "jadwal_id": 1,
     "poli_id": "poli_mata",
     "kodePoli": "MAT",
-    "doctor_id": "11",
+    "doctor_id": 11,
     "doctorName": "dr. H. M. Sjarifudhin, Sp. M., M.M.R",
     "poliName": "Poli Mata",
     "practiceHours": "16:00 - 19:00",
@@ -41,3 +59,32 @@ Content-Type: application/json
     "responsible_name": "John Doe",
     "responsible_phone": "081234567890"
 }
+
+### Registration — Poli Vaksin (id_vaksin wajib)
+POST {{base_url}}/registration
+Content-Type: application/json
+
+{
+    "patient_id": 153125,
+    "patient_nik": "3578012345670001",
+    "jadwal_id": 2,
+    "poli_id": "poli_vaksin",
+    "kodePoli": "VKS",
+    "doctor_id": 11,
+    "doctorName": "dr. Vaksin",
+    "poliName": "Poli Vaksin",
+    "practiceHours": "08:00 - 12:00",
+    "date": "2026-09-24",
+    "payment_method": "umum",
+    "id_vaksin": "1",
+    "responsible_name": "John Doe",
+    "responsible_phone": "081234567890"
+}
+
+### Queue status — non-BPJS (kdantrian)
+GET {{base_url}}/registrations/XXXXXXXXXXXXXXX
+Content-Type: application/json
+
+### Queue status — BPJS (kodebooking)
+GET {{base_url}}/registrations/XXXXXXXXXXXXXXX
+Content-Type: application/json

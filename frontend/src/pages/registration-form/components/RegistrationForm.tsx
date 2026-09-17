@@ -109,8 +109,6 @@ export function RegistrationForm() {
   };
 
   const onSubmit = async (data: RegistrationFormData) => {
-    console.log("Submitting registration with data:", data);
-    console.log("Pending selection:", pendingSelection);
     clearErrors();
 
     if (!patient || !pendingSelection) return;
@@ -157,10 +155,6 @@ export function RegistrationForm() {
             general: "patient_name",
           };
           const formField = fieldMap[field] || field;
-          // general tetap tampil di banner, plus set ke patient_name biar highlight
-          if (field === "general" && !("patient_name" in (err.errors as object))) {
-            // jangan timpa jika sudah ada error spesifik
-          }
           try {
             setError(formField as keyof RegistrationFormData, {
               type: "server",
@@ -170,10 +164,6 @@ export function RegistrationForm() {
             // field tidak ada di form (general) — biarkan banner yang tampil
           }
         });
-        // pastikan banner validasi tetap render (errors general sudah cukup)
-        if (err.errors?.general) {
-          // re-throw tidak perlu, banner sudah handle via isValidationError
-        }
       } else if (err.message) {
         // fallback: error tanpa errors map (mis. post_bpjs gagal)
         setError("patient_name" as keyof RegistrationFormData, {

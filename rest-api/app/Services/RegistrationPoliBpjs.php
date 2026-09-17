@@ -324,8 +324,7 @@ class RegistrationPoliBpjs
                 'status' => false,
                 'message' => 'Credential RS tidak ditemukan'
             ];
-        }
-        try {
+        }        try {
             date_default_timezone_set('UTC');
             $timeStamp = strval(time() - strtotime('1970-01-01 00:00:00'));
             $signature = $this->get_signature($timeStamp, $credentials->cons_id, $credentials->cons_secret);
@@ -345,25 +344,25 @@ class RegistrationPoliBpjs
                 $list = json_decode($response->getBody()->getContents());
                 if ($list->metadata->code == 201) {
                     return [
-                        'status' => 'true',
+                        'status' => true,
                         'message' => $list->metadata->message,
                         'code' => $list->metadata->code
                     ];
                 }
                 return [
-                    'status' => 'true',
+                    'status' => true,
                     'message' => $list->metadata->message,
                     'code' => $list->metadata->code
                 ];
             } else {
                 return [
-                    'status' => 'false',
+                    'status' => false,
                     'message' => 'Gagal terhubung ke bpjs'
                 ];
             }
         } catch (\Throwable $th) {
             return [
-                'status' => 'false',
+                'status' => false,
                 'message' => $th->getMessage()
             ];
         }

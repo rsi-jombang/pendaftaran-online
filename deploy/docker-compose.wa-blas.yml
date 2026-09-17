@@ -1,0 +1,26 @@
+services:
+  # rest-api tidak perlu service baru — kode di www/pendaftaran-online/rest-api
+  # otomatis terlihat oleh php74-fpm via volume www:/var/www (existing)
+  # dan Apache via <Directory /var/www/pendaftaran-online/rest-api/public>
+
+  wa-blas:
+    build: ./www/pendaftaran-online/wa-blas
+    container_name: wa-blas
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+      - TZ=Asia/Jakarta
+    volumes:
+      - ./www/pendaftaran-online/wa-blas/.wwebjs_auth:/app/.wwebjs_auth
+      - ./www/pendaftaran-online/wa-blas/.wwebjs_cache:/app/.wwebjs_cache
+    env_file:
+      - ./www/pendaftaran-online/wa-blas/.env
+    networks:
+      - webnet
+
+networks:
+  webnet:
+    external: true
+    name: webserver_webnet

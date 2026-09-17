@@ -1,0 +1,20 @@
+# Snippet untuk ditempel ke /opt/docker-server-rsi/docker-compose.yml
+# Copy blok wa-blas di bawah ke file compose yang sudah ada (sejajar apache/php74-fpm/mysql).
+# wa-blas bind 127.0.0.1:3001 (lokal saja), join webnet agar rest-api bisa http://wa-blas:3001
+
+  wa-blas:
+    build: ./www/pendaftaran-online/wa-blas
+    container_name: wa-blas
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+      - TZ=Asia/Jakarta
+    volumes:
+      - ./www/pendaftaran-online/wa-blas/.wwebjs_auth:/app/.wwebjs_auth
+      - ./www/pendaftaran-online/wa-blas/.wwebjs_cache:/app/.wwebjs_cache
+    env_file:
+      - ./www/pendaftaran-online/wa-blas/.env
+    networks:
+      - webnet
