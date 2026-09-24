@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { StepIndicator, BackToHome } from "../../shared/components/ui";
+import { Phone } from "lucide-react";
+import { StepIndicator, BackToHome, Button } from "../../shared/components/ui";
 import { NikForm } from "./components/NikForm";
 import { PatientFoundCard } from "./components/PatientFoundCard";
-import { NewPatientForm } from "./components/NewPatientForm";
-import { useCheckNik, useRegisterPatient } from "../../features/nik";
+import { useCheckNik } from "../../features/nik";
 import { LoadingSpinner, ErrorState } from "../../shared/components/feedback";
 import { useRegistrationFlowStore } from "../../shared/store/registrationFlowStore";
 
@@ -19,7 +19,6 @@ export function NikCheckPage() {
   const [lastError, setLastError] = useState<string | null>(null);
 
   const checkNikMutation = useCheckNik();
-  const registerPatientMutation = useRegisterPatient();
 
   const handleCheckNik = useCallback(async (data: { nik: string }) => {
     setCheckResult("loading");
@@ -51,25 +50,6 @@ export function NikCheckPage() {
       navigate(hasSelection ? "/daftar" : "/poli");
     }
   }, [checkNikMutation.data, setPatient, navigate]);
-
-  const handleRegisterPatient = useCallback(async (data: any) => {
-    setCheckResult("registering");
-    setLastError(null);
-
-    try {
-      const response = await registerPatientMutation.mutateAsync(data);
-      if (response.data) {
-        setPatient(response.data);
-        const hasSelection = !!useRegistrationFlowStore.getState().pendingSelection;
-        navigate(hasSelection ? "/daftar" : "/poli");
-      }
-    } catch {
-      setLastError("Gagal mendaftarkan pasien. Silakan coba lagi.");
-      setCheckResult("error");
-    }
-  }, [registerPatientMutation, setPatient, navigate]);
-
-  const isRegisteringState = checkResult === "registering";
 
   const handleCancelRegister = useCallback(() => {
     setCheckResult("idle");
@@ -170,7 +150,9 @@ export function NikCheckPage() {
               </motion.div>
             )}
 
-            {/* State: Patient Not Found - Show Register Form */}
+            {/* State: Patient Not Found - Hubungi Admin.
+                Pendaftaran mandiri pasien baru dinonaktifkan sementara;
+                NewPatientForm tetap ada di repo untuk diaktifkan kembali. */}
             {checkResult === "not-found" && patientData && (
               <motion.div
                 key="not-found"
@@ -178,14 +160,51 @@ export function NikCheckPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.25 }}
+                className="space-y-5 py-4 text-center"
               >
-                <NewPatientForm
-                  nik={patientData.nik}
-                  onSubmit={handleRegisterPatient}
-                  isLoading={isRegisteringState}
-                  error={lastError || undefined}
-                  onCancel={handleCancelRegister}
-                />
+                <div
+                  className="mx-auto flex h-16 w-16 items-center justify-center rounded-full"
+                  style={{ backgroundColor: "color-mix(in srgb, var(--color-warning) 20%, transparent)" }}
+                >
+                  <Phone className="h-8 w-8" style={{ color: "var(--color-warning)" }} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold" style={{ color: "var(--c-text)" }}>
+                    NIK Belum Terdaftar
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--c-text-muted)" }}>
+                    NIK{" "}
+                    <span className="font-mono font-semibold" style={{ color: "var(--c-text)" }}>
+                      {patientData.nik}
+                    </span>{" "}
+                    belum terdaftar di sistem kami. Silakan hubungi admin untuk
+                    bantuan pendaftaran data pasien.
+                  </p>
+                </div>
+                <Button
+                  variant="gradient"
+                  size="lg"
+                  fullWidth
+                  icon={<Phone className="h-5 w-5" />}
+                  onClick={() =>
+                    window.open(
+                      `https://wa.me/6281284863366?text=${encodeURIComponent(
+                        `Halo Admin RSI Jombang, NIK saya ${patientData.nik} belum terdaftar. Mohon bantuan pendaftaran data pasien.`
+                      )}`,
+                      "_blank",
+                      "noopener,noreferrer"
+                    )
+                  }
+                >
+                  Hubungi Admin via WhatsApp
+                </Button>
+                <button
+                  onClick={handleCancelRegister}
+                  className="w-full py-2 text-center text-small transition-colors hover:opacity-80"
+                  style={{ color: "var(--c-text-muted)" }}
+                >
+                  ← Cek NIK lain
+                </button>
               </motion.div>
             )}
 
