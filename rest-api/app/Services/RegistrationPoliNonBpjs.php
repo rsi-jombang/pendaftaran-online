@@ -3,12 +3,40 @@
 namespace App\Services;
 
 use App\Helpers\GeneralHelper;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class RegistrationPoliNonBpjs
 {
     public function register($data)
     {
+        // Cek batas waktu pendaftaran (smis_rg_jadwal_poli_non_bpjs.waktu_batas_pendaftaran, menit).
+        // Tolak jika now >= jam_mulai - batas. NULL/0 = tutup tepat jam mulai.
+        // Zona waktu eksplisit Asia/Jakarta (default app = UTC).
+        $jadwal = DB::table('smis_rg_jadwal_poli_non_bpjs')->where('id', $data['jadwal_id'])->first();
+        if (!$jadwal) {
+            return [
+                'success' => false,
+                'message' => 'Jadwal tidak ditemukan.',
+                'data' => null,
+                'errors' => ['general' => ['Jadwal tidak ditemukan.']],
+            ];
+        }
+        $batas = (int) ($jadwal->waktu_batas_pendaftaran ?? 0);
+        $mulai = Carbon::parse($data['date'] . ' ' . $jadwal->jam_mulai, 'Asia/Jakarta');
+        $cutoff = $mulai->copy()->subMinutes($batas);
+        if (Carbon::now('Asia/Jakarta')->greaterThanOrEqualTo($cutoff)) {
+            $msg = 'Pendaftaran untuk jadwal ini sudah ditutup (batas ' . $batas
+                . ' menit sebelum jam ' . substr($jadwal->jam_mulai, 0, 5)
+                . '). Silakan pilih jadwal lain.';
+            return [
+                'success' => false,
+                'message' => $msg,
+                'data' => null,
+                'errors' => ['general' => [$msg]],
+            ];
+        }
+
         // Here you would implement the logic to register a patient for a non-BPJS poli
         // For example, you might save the data to the database, send notifications, etc.
         $generate=GeneralHelper::generateAntreanNonBpjs($data['jadwal_id'], $data['kodePoli'], $data['date']);
