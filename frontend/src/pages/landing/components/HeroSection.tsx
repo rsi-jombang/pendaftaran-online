@@ -1,7 +1,9 @@
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { CalendarClock } from "lucide-react";
 import { Button } from "../../../shared/components/ui/Button";
+import type { Doctor } from "../../../features/poli/types";
 
 const HERO_IMG =
   "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&q=80&auto=format&fit=crop";
@@ -17,9 +19,33 @@ const fadeUp = (delay: number) => ({
 interface HeroSectionProps {
   poliCount: number;
   doctorCount: number;
+  featuredDoctors: Doctor[];
+  initialDoctor: Doctor | null;
+  featuredPoliName: string;
 }
 
-export function HeroSection({ poliCount, doctorCount }: HeroSectionProps) {
+const ROTATE_INTERVAL_MS = 5000;
+
+export function HeroSection({ poliCount, doctorCount, featuredDoctors, initialDoctor, featuredPoliName }: HeroSectionProps) {
+  const reduceMotion = useReducedMotion();
+  const [paused, setPaused] = useState(false);
+  const [index, setIndex] = useState(() =>
+    Math.max(0, featuredDoctors.findIndex((d) => d.jadwal_id === initialDoctor?.jadwal_id))
+  );
+
+  // Reset ke dokter hari ini bila list berubah (data baru masuk / ganti hari)
+  useEffect(() => {
+    setIndex(Math.max(0, featuredDoctors.findIndex((d) => d.jadwal_id === initialDoctor?.jadwal_id)));
+  }, [featuredDoctors, initialDoctor]);
+
+  // Rotasi tiap 5 detik — mati bila: reduced-motion, di-hover, atau < 2 dokter
+  useEffect(() => {
+    if (reduceMotion || paused || featuredDoctors.length < 2) return;
+    const t = setInterval(() => setIndex((i) => (i + 1) % featuredDoctors.length), ROTATE_INTERVAL_MS);
+    return () => clearInterval(t);
+  }, [reduceMotion, paused, featuredDoctors.length]);
+
+  const doctor = featuredDoctors[index] ?? null;
   return (
     <section className="relative overflow-hidden pt-28 pb-16 lg:pt-36 lg:pb-24 px-6">
       {/* Decorative blobs */}
@@ -136,38 +162,42 @@ export function HeroSection({ poliCount, doctorCount }: HeroSectionProps) {
               />
             </div>
 
-            {/* Floating card 1 — Queue number */}
-            <div className="glass animate-float absolute -left-10 bottom-14 rounded-card p-5 shadow-soft">
-              <p className="text-label uppercase" style={{ color: "var(--c-text-muted)" }}>
-                Nomor Antrian Anda
-              </p>
-              <p
-                className="font-mono text-4xl font-bold mt-1"
-                style={{ color: "var(--color-primary)" }}
+            {/* Floating card — Dokter hari ini, berotasi tiap 5 detik (data asli) */}
+            {doctor && (
+              <div
+                className="glass animate-float-delayed absolute -right-4 top-10 rounded-input p-3 pr-5 flex items-center gap-3 shadow-soft"
+                onMouseEnter={() => setPaused(true)}
+                onMouseLeave={() => setPaused(false)}
               >
-                A-014
-              </p>
-              <p className="text-xs mt-1" style={{ color: "var(--c-text-muted)" }}>
-                Sedang menunggu panggilan
-              </p>
-            </div>
-
-            {/* Floating card 2 — Doctor chip */}
-            <div className="glass animate-float-delayed absolute -right-4 top-10 rounded-input p-3 pr-5 flex items-center gap-3 shadow-soft">
-              <img
-                src="/doctor-female.png"
-                alt="dr. Sarah Wijaya"
-                className="h-11 w-11 rounded-full object-cover"
-              />
-              <div>
-                <p className="text-small font-semibold" style={{ color: "var(--c-text)" }}>
-                  dr. Sarah Wijaya, Sp.A
-                </p>
-                <p className="text-xs" style={{ color: "var(--c-text-muted)" }}>
-                  09:00 – 12:00 · Poli Anak
-                </p>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={doctor.jadwal_id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="flex items-center gap-3"
+                  >
+                    <img
+                      src={doctor.avatar_url || "/doctor-male.png"}
+                      alt={doctor.name}
+                      className="h-11 w-11 rounded-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                    <div>
+                      <p className="text-small font-semibold" style={{ color: "var(--c-text)" }}>
+                        {doctor.name}
+                      </p>
+                      <p className="text-xs" style={{ color: "var(--c-text-muted)" }}>
+                        {doctor.practice_hours} · {featuredPoliName}
+                      </p>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
               </div>
-            </div>
+            )}
           </motion.div>
         </div>
       </div>
