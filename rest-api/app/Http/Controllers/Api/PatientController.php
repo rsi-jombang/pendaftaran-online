@@ -105,6 +105,7 @@ class PatientController extends BaseController
             'occupation' => 'nullable|string|max:50',
             'education' => 'nullable|string|max:48',
             'religion' => 'nullable|string|max:20',
+            'no_paspor' => 'nullable|string|max:12',
         ]);
 
         if ($validator->fails()) {
@@ -156,7 +157,7 @@ class PatientController extends BaseController
             'kelamin' => $gender,
             'ktp' => $nik,
             'npwp' => null,
-            'no_paspor' => null,
+            'no_paspor' => $request->input('no_paspor') ?: null,
             'rt' => 0,
             'rw' => 0,
             'nama_provinsi' => $request->input('province_name', ''),

@@ -1,6 +1,7 @@
 export interface RegistrationPayload {
   patient_id: number;
   patient_nik: string;
+  no_paspor?: string;
   poli_id: string;
   kodePoli: string;
   jadwal_id: number;

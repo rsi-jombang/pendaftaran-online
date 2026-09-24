@@ -4,6 +4,7 @@ import { create } from "zustand";
 export interface PatientData {
   id: string;
   nik: string;
+  no_paspor?: string;
   name: string;
   birth_date: string;
   gender: "male" | "female";

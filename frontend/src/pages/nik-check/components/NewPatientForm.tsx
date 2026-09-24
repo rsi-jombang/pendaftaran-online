@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Church,
   Heart,
+  IdCard,
 } from "lucide-react";
 import { useProvinsi, useKabupaten, useAllKabupaten, useKecamatan, useKelurahan } from "../../../features/master";
 import type { MasterRegionItem } from "../../../features/master";
@@ -25,6 +26,13 @@ const todayLocal = format(new Date(), "yyyy-MM-dd");
 
 const newPatientSchema = z.object({
   nik: z.string().length(16, "NIK harus 16 digit"),
+  no_paspor: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || /^[A-Za-z0-9]{6,12}$/.test(v), {
+      message: "Nomor paspor harus 6–12 karakter (huruf/angka), atau kosongkan",
+    })
+    .optional(),
   name: z.string().min(3, "Nama minimal 3 karakter").max(100, "Nama maksimal 100 karakter"),
   birth_date: z.string().min(1, "Tanggal lahir wajib diisi"),
   gender: z.enum(["male", "female"]),
@@ -180,6 +188,15 @@ export function NewPatientForm({
           disabled
           value={nik}
           leadingIcon={<User className="w-5 h-5" />}
+        />
+
+        <Input
+          label="Nomor Paspor (Opsional)"
+          type="text"
+          placeholder="cth: A1234567 — kosongkan bila tidak ada"
+          error={errors.no_paspor?.message}
+          leadingIcon={<IdCard className="w-5 h-5" />}
+          {...register("no_paspor")}
         />
 
         <Input

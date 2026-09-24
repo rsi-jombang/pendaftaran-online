@@ -5,6 +5,7 @@ export interface CheckNikRequest {
 export interface PatientData {
   id: string;
   nik: string;
+  no_paspor?: string;
   name: string;
   birth_date: string;
   gender: "male" | "female";
@@ -37,6 +38,7 @@ export interface CheckNikResponse {
 
 export interface RegisterPatientRequest {
   nik: string;
+  no_paspor?: string;
   name: string;
   birth_date: string;
   gender: "male" | "female";

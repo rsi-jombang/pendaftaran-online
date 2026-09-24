@@ -12,12 +12,19 @@ import { ErrorState } from "../../../shared/components/feedback/ErrorState";
 import { useSubmitRegistration } from "../../../features/registration/hooks";
 import { useRegistrationFlowStore } from "../../../shared/store/registrationFlowStore";
 import { useAsuransi, usePerusahaan, useVaksin } from "../../../features/master";
-import { User, CreditCard, Phone, AlertCircle, UserCheck, Syringe } from "lucide-react";
+import { User, CreditCard, Phone, AlertCircle, UserCheck, Syringe, IdCard } from "lucide-react";
 
 const registrationSchema = z.object({
   patient_name: z.string().min(1, "Nama pasien wajib diisi"),
   patient_nik: z.string().length(16, "NIK harus 16 digit"),
   patient_phone: z.string().min(10, "Nomor HP minimal 10 digit"),
+  no_paspor: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || /^[A-Za-z0-9]{6,12}$/.test(v), {
+      message: "Nomor paspor harus 6–12 karakter (huruf/angka), atau kosongkan",
+    })
+    .optional(),
   payment_method: z.enum(["umum", "asuransi", "rekanan"]),
   insurance_id: z.string().optional(),
   company_id: z.string().optional(),
@@ -79,6 +86,7 @@ export function RegistrationForm() {
       setValue("patient_name", patient.name, { shouldValidate: true });
       setValue("patient_nik", patient.nik, { shouldValidate: true });
       setValue("patient_phone", patient.phone, { shouldValidate: true });
+      setValue("no_paspor", patient.no_paspor ?? "", { shouldValidate: true });
     }
   }, [patient, setValue]);
 
@@ -135,6 +143,7 @@ export function RegistrationForm() {
         company_id: data.company_id || undefined,
         responsible_name: data.responsible_name || undefined,
         responsible_phone: data.responsible_phone || undefined,
+        no_paspor: data.no_paspor || undefined,
         id_vaksin: isVaksinPoli ? data.id_vaksin || undefined : undefined,
       });
     } catch (err: any) {
@@ -151,6 +160,7 @@ export function RegistrationForm() {
             company_id: "company_id",
             responsible_name: "responsible_name",
             responsible_phone: "responsible_phone",
+            no_paspor: "no_paspor",
             id_vaksin: "id_vaksin",
             general: "patient_name",
           };
@@ -312,6 +322,17 @@ export function RegistrationForm() {
                   type="tel"
                   leadingIcon={<Phone className="h-4 w-4" />}
                   {...register("patient_phone")}
+                />
+              </div>
+
+              {/* Nomor Paspor (opsional, editable) */}
+              <div>
+                <Input
+                  label="Nomor Paspor (Opsional)"
+                  placeholder="cth: A1234567 — kosongkan bila tidak ada"
+                  leadingIcon={<IdCard className="h-4 w-4" />}
+                  {...register("no_paspor")}
+                  error={errors.no_paspor?.message}
                 />
               </div>
 

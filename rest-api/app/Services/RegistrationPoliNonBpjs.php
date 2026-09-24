@@ -39,6 +39,7 @@ class RegistrationPoliNonBpjs
         $antrian->telppj = $data['responsible_phone'] ?? '';
         $antrian->kedatangan = 'Datang Sendiri';
         $antrian->id_vaksin = $data['id_vaksin'] ?? null;
+        $antrian->no_paspor = $data['no_paspor'] ?? '';
         $antrian->save();
 
         // WA fire-and-forget (tidak gagalkan registrasi)

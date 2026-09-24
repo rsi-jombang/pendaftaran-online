@@ -30,6 +30,7 @@ class RegistrationController extends Controller
             'company_id' => 'nullable|string',
             'responsible_name' => 'nullable|string',
             'responsible_phone' => 'nullable|string',
+            'no_paspor' => 'nullable|string|max:12',
             'id_vaksin' => [
                 Rule::requiredIf(fn () => $request->input('poli_id') === 'poli_vaksin'),
                 'nullable',
