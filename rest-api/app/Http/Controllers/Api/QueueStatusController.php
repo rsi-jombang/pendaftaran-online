@@ -50,6 +50,13 @@ class QueueStatusController extends Controller
                 ->whereDate('tanggalperiksa', $antrian->tanggalperiksa)
                 ->where('angkaantrean', '<', $antrian->angkaantrean)
                 ->count();
+
+            $jadwalNonBpjs = DB::table('smis_rg_jadwal_poli_non_bpjs')
+                ->where('id', $antrian->jadwal_id)
+                ->first();
+            if ($jadwalNonBpjs) {
+                $practiceHours = $jadwalNonBpjs->jam_mulai . '-' . $jadwalNonBpjs->jam_selesai;
+            }
         }
 
         $patient = DB::table('smis_rg_patient')

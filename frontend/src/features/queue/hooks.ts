@@ -14,7 +14,9 @@ export function useQueueStatus(registrationId: string | null) {
       return 15000;
     },
     staleTime: 10000,
-    retry: 3,
+    // Kode salah (404) langsung error tanpa retry; error lain retry 3x
+    retry: (failureCount, error: any) =>
+      error?.response?.status === 404 ? false : failureCount < 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 15000),
   });
 }

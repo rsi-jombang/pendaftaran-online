@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { label: "Beranda", to: "/" },
   { label: "Layanan", to: "/#layanan" },
   { label: "Jadwal Dokter", to: "/poli" },
+  { label: "Cek Registrasi", to: "/cek-registrasi" },
   { label: "Kontak", to: "/#kontak" },
 ];
 
