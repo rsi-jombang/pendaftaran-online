@@ -75,7 +75,7 @@ class RegistrationPoliNonBpjs
             $wa = app(WhatsappService::class);
             $phone = $patient->telpon ?? $data['responsible_phone'] ?? null;
             if ($phone) {
-                $wa->send($phone, $wa->buildMessage($data, $antrian->kdantrian, $antrian->nomorantrean));
+                $wa->send($phone, $wa->buildMessage($data, $antrian->kdantrian, $antrian->nomorantrean, $jadwal->jam_internal_mulai));
             }
         } catch (\Throwable $e) {
             // silent

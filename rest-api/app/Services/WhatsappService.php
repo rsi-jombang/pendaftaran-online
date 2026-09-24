@@ -34,12 +34,12 @@ class WhatsappService
         }
     }
 
-    public function buildMessage(array $data, string $kode, string $nomorAntrean): string
+    public function buildMessage(array $data, string $kode, string $nomorAntrean, string $jam_internal_mulai): string
     {
         $nama = $data['poliName'] ?? $data['poli_name'] ?? '-';
         $dokter = $data['doctorName'] ?? '-';
         $tgl = $data['date'] ?? '-';
-        $jam = $data['practiceHours'] ?? '-';
+        $jam = $jam_internal_mulai ?? '-';
         return "Halo, pendaftaran Anda berhasil.\n"
             . "Poli: {$nama}\n"
             . "Dokter: {$dokter}\n"
