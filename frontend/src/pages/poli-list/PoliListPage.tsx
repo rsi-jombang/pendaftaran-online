@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Skeleton } from "../../shared/components/ui";
+import { Skeleton, BackToHome } from "../../shared/components/ui";
 import { EmptyState } from "../../shared/components/feedback";
 import { PoliCard } from "./components/PoliCard";
 import { PoliSearchFilter } from "./components/PoliSearchFilter";
@@ -47,6 +47,16 @@ export function PoliListPage() {
 
       <div className="relative py-12 px-6">
         <div className="max-w-container mx-auto">
+          {/* Back to Home */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mb-6"
+          >
+            <BackToHome />
+          </motion.div>
+
           {/* Page Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

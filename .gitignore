@@ -17,6 +17,12 @@ wa-blas/.wwebjs_cache/
 # Laravel
 rest-api/vendor/
 
+# Referensi tooling server (berisi IP/user internal) — jangan di-commit
+deploy/server-tools/
+
+# Arsip/zip transfer
+*.zip
+
 # Logs
 *.log
 npm-debug.log*

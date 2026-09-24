@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { StepIndicator } from "../../shared/components/ui";
+import { StepIndicator, BackToHome } from "../../shared/components/ui";
 import { NikForm } from "./components/NikForm";
 import { PatientFoundCard } from "./components/PatientFoundCard";
 import { NewPatientForm } from "./components/NewPatientForm";
@@ -96,6 +96,11 @@ export function NikCheckPage() {
       </div>
 
       <div className="relative mx-auto max-w-xl">
+        {/* Back to Home */}
+        <div className="mb-6">
+          <BackToHome />
+        </div>
+
         {/* Step Indicator */}
         <StepIndicator currentStep={1} steps={steps} />
 

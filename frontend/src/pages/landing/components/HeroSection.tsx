@@ -48,7 +48,7 @@ export function HeroSection({ poliCount, doctorCount }: HeroSectionProps) {
                   className="h-1.5 w-1.5 rounded-full"
                   style={{ backgroundColor: "var(--color-accent)" }}
                 />
-                Pendaftaran Online Rumah Sakit
+                Pendaftaran Online RSI Jombang
               </span>
             </motion.div>
 

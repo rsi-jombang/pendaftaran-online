@@ -21,3 +21,5 @@ export type { SelectProps, SelectOption } from "./Select";
 
 export { SearchableSelect } from "./SearchableSelect";
 export type { SearchableSelectProps } from "./SearchableSelect";
+
+export { BackToHome } from "./BackToHome";

@@ -41,11 +41,13 @@ export function Navbar() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shadow-soft">
-              <span className="text-white font-bold text-h3">RS</span>
-            </div>
+            <img
+              src="/logorsi_fixed.png"
+              alt="Logo Rumah Sakit Islam Jombang"
+              className="w-10 h-10 object-contain rounded-lg"
+            />
             <span className="text-h3 text-text-primary font-semibold hidden sm:block">
-              Rumah Sakit
+              Rumah Sakit Islam Jombang
             </span>
           </Link>
 

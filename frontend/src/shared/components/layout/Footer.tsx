@@ -7,27 +7,28 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Info RS */}
           <div>
-            <h3 className="text-h3 text-text-primary mb-4">Rumah Sakit</h3>
+            <h3 className="text-h3 text-text-primary mb-4">Rumah Sakit Islam Jombang</h3>
+            <img
+              src="/logorsi_fixed.png"
+              alt="Logo Rumah Sakit Islam Jombang"
+              className="w-16 h-16 object-contain rounded-lg mb-4"
+            />
             <p className="text-body text-text-secondary mb-4">
               Menyediakan layanan kesehatan terbaik dengan teknologi modern untuk kenyamanan pasien.
             </p>
           </div>
 
-          {/* Jam Operasional */}
+          {/* Jam Kunjungan */}
           <div>
-            <h3 className="text-h3 text-text-primary mb-4">Jam Operasional</h3>
+            <h3 className="text-h3 text-text-primary mb-4">Jam Kunjungan</h3>
             <dl className="space-y-2 text-body text-text-secondary">
-              <div className="flex justify-between">
-                <dt>Senin - Jumat</dt>
-                <dd className="font-medium">07.00 - 21.00</dd>
+              <div className="flex justify-between gap-4">
+                <dt>Sesi Pagi</dt>
+                <dd className="font-medium text-right">10.00 – 12.00 WIB</dd>
               </div>
-              <div className="flex justify-between">
-                <dt>Sabtu</dt>
-                <dd className="font-medium">08.00 - 16.00</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Minggu & Libur</dt>
-                <dd className="font-medium">Tutup</dd>
+              <div className="flex justify-between gap-4">
+                <dt>Sesi Sore</dt>
+                <dd className="font-medium text-right">17.00 – 20.00 WIB</dd>
               </div>
             </dl>
           </div>
@@ -36,9 +37,25 @@ export function Footer() {
           <div>
             <h3 className="text-h3 text-text-primary mb-4">Kontak</h3>
             <address className="text-body text-text-secondary not-italic space-y-2">
-              <p>Jl. Kesehatan No. 123, Kota Medis</p>
-              <p>Telp: (021) 1234-5678</p>
-              <p>Email: info@rumahsakit.co.id</p>
+              <p>Jl. Brigjen Kretarto 22 A, Jombang, Jawa Timur 61413</p>
+              <p>
+                Email:{" "}
+                <a
+                  href="mailto:amalsholeh@rsi-jombang.com"
+                  className="hover:text-primary transition-colors"
+                >
+                  amalsholeh@rsi-jombang.com
+                </a>
+              </p>
+              <p>
+                Email:{" "}
+                <a
+                  href="mailto:humasrsijombang@gmail.com"
+                  className="hover:text-primary transition-colors"
+                >
+                  humasrsijombang@gmail.com
+                </a>
+              </p>
             </address>
           </div>
 
@@ -77,7 +94,7 @@ export function Footer() {
         {/* Divider & Copyright */}
         <div className="mt-8 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-small text-text-secondary">
-            &copy; 2026 Rumah Sakit. Hak cipta dilindungi.
+            &copy; 2026 Rumah Sakit Islam Jombang. Hak cipta dilindungi.
           </p>
           <div className="flex gap-6">
             <a

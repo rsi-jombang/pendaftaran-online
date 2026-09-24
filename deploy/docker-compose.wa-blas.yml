@@ -1,8 +1,10 @@
-services:
-  # rest-api tidak perlu service baru — kode di www/pendaftaran-online/rest-api
-  # otomatis terlihat oleh php74-fpm via volume www:/var/www (existing)
-  # dan Apache via <Directory /var/www/pendaftaran-online/rest-api/public>
+# Alternatif terpisah (jika tidak mau menempel ke docker-compose.yml utama).
+# Jalankan dari /opt/docker-server-rsi:
+#   docker compose -f deploy/docker-compose.wa-blas.yml up -d --build
+# Catatan: versi yang terpasang di server adalah blocker dari docker-compose.patch.yml
+# (bukan file ini) — file ini hanya cadangan.
 
+services:
   wa-blas:
     build: ./www/pendaftaran-online/wa-blas
     container_name: wa-blas
