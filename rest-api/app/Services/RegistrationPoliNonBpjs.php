@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Helpers\GeneralHelper;
+use App\Models\SMIS_Pasien;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -42,6 +43,21 @@ class RegistrationPoliNonBpjs
         $generate=GeneralHelper::generateAntreanNonBpjs($data['jadwal_id'], $data['kodePoli'], $data['date']);
         $patient = DB::table('smis_rg_patient')->where('ktp', $data['patient_nik'])->first();
         $count_baru_lama = DB::table('smis_rg_layananpasien')->where('nrm', $patient->id)->count();
+
+        // Cek double registrasi
+        $cek_antrians = DB::table('antrians_non_bpjs')->where('norm', $patient->id)->where('tanggalperiksa', $data['date'])->where('jadwal_id', $data['jadwal_id'])->first();
+        if ($cek_antrians) {
+            $msg = 'Pasien dengan NIK ' . $data['patient_nik']
+                    . ' sudah terdaftar di ' . $data['poliName']
+                    . ' pada tanggal ' . $data['date']
+                    . ' dengan nomor antrian ' . $cek_antrians->nomorantrean;
+            return [
+                'success' => false,
+                'message' => $msg,
+                'data' => null,
+                'errors' => ['general' => [$msg]],
+            ];
+        }
 
         $antrian = new \App\Models\AntrianNonBpjs();
         if($count_baru_lama == 0){
