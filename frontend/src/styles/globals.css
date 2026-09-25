@@ -340,7 +340,20 @@
 /* ============================================================
    PRINT STYLES
    ============================================================ */
+/* Struk cetak: sembunyi di layar, tampil saat print (dan sebaliknya) */
+.print-only {
+  display: none;
+}
+
 @media print {
+  .screen-only {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
   .no-print,
   .no-print\:overflow-hidden,
   .no-print\:rounded-card,

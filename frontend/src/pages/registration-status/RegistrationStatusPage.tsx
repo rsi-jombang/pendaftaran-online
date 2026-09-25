@@ -6,6 +6,7 @@ import { StepIndicator, Button } from "../../shared/components/ui";
 import { ErrorState } from "../../shared/components/feedback";
 import { QueueNumberDisplay } from "./components/QueueNumberDisplay";
 import { PatientSummaryCard } from "./components/PatientSummaryCard";
+import { PrintReceipt } from "./components/PrintReceipt";
 import { useRegistrationFlowStore } from "../../shared/store/registrationFlowStore";
 import type { RegistrationStatus } from "../../features/queue/types";
 
@@ -78,6 +79,16 @@ export function RegistrationStatusPage() {
   };
 
   const handlePrint = () => {
+    // Nama file PDF mengikuti nomor antrian; kembalikan setelah dialog tutup
+    const prevTitle = document.title;
+    if (displayData) {
+      document.title = `Bukti-Pendaftaran-${displayData.queue_number}`;
+    }
+    const restore = () => {
+      document.title = prevTitle;
+      window.removeEventListener("afterprint", restore);
+    };
+    window.addEventListener("afterprint", restore);
     window.print();
   };
 
@@ -131,8 +142,9 @@ export function RegistrationStatusPage() {
   }
 
   return (
+    <>
     <div
-      className="relative min-h-screen px-6 py-12"
+      className="screen-only relative min-h-screen px-6 py-12"
       style={{ backgroundColor: "var(--c-bg)" }}
     >
       {/* Background glow */}
@@ -259,5 +271,7 @@ export function RegistrationStatusPage() {
         </motion.div>
       </div>
     </div>
+    {displayData && <PrintReceipt data={displayData} />}
+    </>
   );
 }

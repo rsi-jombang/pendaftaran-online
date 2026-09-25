@@ -67,18 +67,18 @@ Content-Type: application/json
 {
     "patient_id": 153125,
     "patient_nik": "3578012345670001",
-    "jadwal_id": 2,
+    "jadwal_id": 15,
     "poli_id": "poli_vaksin",
     "kodePoli": "VKS",
     "doctor_id": 11,
     "doctorName": "dr. Vaksin",
     "poliName": "Poli Vaksin",
     "practiceHours": "08:00 - 12:00",
-    "date": "2026-09-24",
+    "date": "2026-09-26",
     "payment_method": "umum",
     "id_vaksin": "1",
     "responsible_name": "John Doe",
-    "responsible_phone": "081234567890"
+    "responsible_phone": "082140300286"
 }
 
 ### Queue status — non-BPJS (kdantrian)
